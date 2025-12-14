@@ -1,4 +1,4 @@
-import { LucideIcon, BookOpen, FolderCog, Code, Target, CheckCircle, Clock, FileCode, TestTube, AlertTriangle, Layers, GraduationCap } from 'lucide-react';
+import { LucideIcon, BookOpen, FolderCog, Code, Target, CheckCircle, Clock, FileCode, TestTube, AlertTriangle, Layers, GraduationCap, Cpu } from 'lucide-react';
 
 export interface Section {
   id: string;
@@ -20,5 +20,6 @@ export const sections: Section[] = [
   { id: 'testng-implementation', title: 'TestNG Implementation', shortTitle: 'TestNG', icon: TestTube, color: 'section-testng', description: 'Annotations and execution' },
   { id: 'exception-handling', title: 'Exception Handling', shortTitle: 'Exceptions', icon: AlertTriangle, color: 'section-exceptions', description: 'Alerts, frames, windows' },
   { id: 'framework-best-practices', title: 'Framework Best Practices', shortTitle: 'Framework', icon: Layers, color: 'section-framework', description: 'POM, logging, reporting' },
+  { id: 'advanced-concepts', title: 'Shadow DOM & Advanced', shortTitle: 'Advanced', icon: Cpu, color: 'section-advanced', description: 'Shadow DOM, headless, CDP' },
   { id: 'interview-prep', title: 'Interview & Real Project', shortTitle: 'Interview', icon: GraduationCap, color: 'section-interview', description: 'Questions and explanations' },
 ];
