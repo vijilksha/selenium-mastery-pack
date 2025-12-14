@@ -10,6 +10,7 @@ import { RealScripts } from '@/components/sections/RealScripts';
 import { TestNGImplementation } from '@/components/sections/TestNGImplementation';
 import { ExceptionHandling } from '@/components/sections/ExceptionHandling';
 import { FrameworkBestPractices } from '@/components/sections/FrameworkBestPractices';
+import { AdvancedConcepts } from '@/components/sections/AdvancedConcepts';
 import { InterviewPrep } from '@/components/sections/InterviewPrep';
 import { Helmet } from 'react-helmet-async';
 
@@ -47,7 +48,7 @@ const Index = () => {
               
               <div className="flex flex-wrap justify-center gap-4 pt-4">
                 <span className="px-4 py-2 bg-card rounded-lg border border-border text-sm">
-                  11 Comprehensive Sections
+                  12 Comprehensive Sections
                 </span>
                 <span className="px-4 py-2 bg-card rounded-lg border border-border text-sm">
                   Real-World Projects
@@ -69,6 +70,7 @@ const Index = () => {
             <TestNGImplementation />
             <ExceptionHandling />
             <FrameworkBestPractices />
+            <AdvancedConcepts />
             <InterviewPrep />
             
             {/* Footer */}
