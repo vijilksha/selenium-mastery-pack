@@ -990,12 +990,359 @@ public void testFlakyOperation() {
     ],
   },
   'exception-handling': {
-    sectionTitle: 'Exception Handling',
+    sectionTitle: 'Exception Handling & Selenium Exceptions',
     sectionNumber: 9,
     slides: [
       {
+        title: 'Selenium Exception Hierarchy',
+        content: ['All Selenium exceptions extend from WebDriverException. Understanding the hierarchy helps in proper exception handling.'],
+        bulletPoints: [
+          'RuntimeException → WebDriverException (parent of all Selenium exceptions)',
+          'NoSuchElementException - Element not found in DOM',
+          'StaleElementReferenceException - Element no longer attached to DOM',
+          'ElementNotInteractableException - Element not visible/interactable',
+          'ElementClickInterceptedException - Another element receives click',
+          'TimeoutException - Wait condition not met in time',
+          'NoSuchFrameException / NoSuchWindowException - Frame/Window not found',
+        ],
+      },
+      {
+        title: 'NoSuchElementException',
+        content: ['Thrown when findElement() cannot locate an element. Most common exception in Selenium.'],
+        bulletPoints: [
+          'Causes: Wrong locator, element not loaded, inside frame, dynamically generated',
+          'Solution: Use explicit waits, verify locator, check for frames',
+        ],
+        codeExplanation: 'Use WebDriverWait with ExpectedConditions to wait for element presence. Catch TimeoutException for graceful handling. For optional elements like popups, catch NoSuchElementException directly.',
+        code: `WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+try {
+    WebElement searchInput = wait.until(
+        ExpectedConditions.presenceOfElementLocated(By.id("searchInput"))
+    );
+    searchInput.sendKeys("Selenium");
+} catch (TimeoutException e) {
+    System.out.println("Element not found within 10 seconds");
+    ScreenshotUtility.takeScreenshot(driver, "element_not_found");
+}
+
+// For optional elements (popup close button)
+try {
+    driver.findElement(By.id("popupClose")).click();
+} catch (NoSuchElementException e) {
+    System.out.println("No popup present - continuing");
+}`,
+        codeTitle: 'NoSuchElementException Handling',
+      },
+      {
+        title: 'StaleElementReferenceException',
+        content: ['Thrown when element reference is no longer valid because DOM was updated.'],
+        bulletPoints: [
+          'Causes: Page refresh, AJAX update, SPA re-render, JavaScript DOM modification',
+          'Solution: Re-find element, use FluentWait with ignoring(), retry mechanism',
+        ],
+        codeExplanation: 'When DOM changes, element references become stale. Use FluentWait ignoring StaleElementReferenceException or implement retry logic. ExpectedConditions.refreshed() waits for element to be re-attached.',
+        code: `// Using FluentWait to ignore stale elements
+Wait<WebDriver> wait = new FluentWait<>(driver)
+    .withTimeout(Duration.ofSeconds(30))
+    .pollingEvery(Duration.ofSeconds(2))
+    .ignoring(StaleElementReferenceException.class);
+
+WebElement element = wait.until(driver -> {
+    WebElement el = driver.findElement(By.id("dynamicElement"));
+    el.click();  // Action protected by wait
+    return el;
+});
+
+// Or use refreshed condition
+WebDriverWait webWait = new WebDriverWait(driver, Duration.ofSeconds(10));
+webWait.until(ExpectedConditions.refreshed(
+    ExpectedConditions.elementToBeClickable(By.id("courseCard"))
+)).click();`,
+        codeTitle: 'StaleElementReferenceException Handling',
+      },
+      {
+        title: 'ElementNotInteractableException',
+        content: ['Thrown when element is in DOM but cannot be interacted with.'],
+        bulletPoints: [
+          'Causes: Element hidden (display:none), zero dimensions, off-screen, disabled',
+          'Solution: Wait for visibility, scroll into view, use JavaScript click',
+        ],
+        codeExplanation: 'Element exists but is not interactable. Wait for elementToBeClickable() instead of just presence. Scroll element into view. Use JavaScript click as fallback for hidden elements.',
+        code: `// Wait for element to be clickable
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+WebElement button = wait.until(
+    ExpectedConditions.elementToBeClickable(By.id("submitButton"))
+);
+button.click();
+
+// Scroll element into view if off-screen
+JavascriptExecutor js = (JavascriptExecutor) driver;
+js.executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
+Thread.sleep(500);  // Wait for scroll animation
+element.click();
+
+// JavaScript click as fallback
+try {
+    element.click();
+} catch (ElementNotInteractableException e) {
+    js.executeScript("arguments[0].click();", element);
+}`,
+        codeTitle: 'ElementNotInteractableException Handling',
+      },
+      {
+        title: 'ElementClickInterceptedException',
+        content: ['Thrown when click is intercepted by another element (overlay, popup, sticky header).'],
+        bulletPoints: [
+          'Causes: Modal overlay, cookie banner, sticky header/footer, loading spinner',
+          'Solution: Wait for overlay to disappear, close popup, scroll past header',
+        ],
+        codeExplanation: 'Another element receives the click instead of target. Wait for overlays to disappear using invisibilityOfElementLocated(). Close popups before clicking. Scroll to avoid sticky headers.',
+        code: `WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+// Wait for loading overlay to disappear
+wait.until(ExpectedConditions.invisibilityOfElementLocated(
+    By.className("loading-overlay")
+));
+
+// Wait for modal backdrop to disappear
+wait.until(ExpectedConditions.invisibilityOfElementLocated(
+    By.className("modal-backdrop")
+));
+
+// Close cookie consent if present
+try {
+    WebElement acceptCookies = driver.findElement(By.id("onetrust-accept-btn"));
+    acceptCookies.click();
+    wait.until(ExpectedConditions.invisibilityOf(acceptCookies));
+} catch (NoSuchElementException e) {
+    // No cookie banner
+}
+
+// Now safe to click
+driver.findElement(By.id("targetButton")).click();`,
+        codeTitle: 'ElementClickInterceptedException Handling',
+      },
+      {
+        title: 'TimeoutException',
+        content: ['Thrown when explicit wait condition is not met within timeout period.'],
+        bulletPoints: [
+          'Causes: Slow network, element never appears, wrong condition',
+          'Solution: Increase timeout, verify condition is correct, check network',
+        ],
+        codeExplanation: 'Explicit wait exceeds timeout without condition being met. Handle gracefully with try-catch. Log current state for debugging. Consider retry with increasing timeouts.',
+        code: `public boolean waitForElementWithTimeout(By locator, int seconds) {
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));
+    
+    try {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        return true;
+    } catch (TimeoutException e) {
+        System.out.println("Element not visible after " + seconds + " seconds");
+        System.out.println("Current URL: " + driver.getCurrentUrl());
+        ScreenshotUtility.takeScreenshot(driver, "timeout_" + locator);
+        return false;
+    }
+}
+
+// Retry with increasing timeout
+int[] timeouts = {5, 10, 20};
+for (int timeout : timeouts) {
+    try {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    } catch (TimeoutException e) {
+        System.out.println("Timeout after " + timeout + "s, retrying...");
+    }
+}`,
+        codeTitle: 'TimeoutException Handling',
+      },
+      {
+        title: 'NoSuchFrameException & NoSuchWindowException',
+        content: ['Thrown when trying to switch to non-existent frame or closed window.'],
+        bulletPoints: [
+          'NoSuchFrameException: Frame doesn\'t exist or hasn\'t loaded yet',
+          'NoSuchWindowException: Window has been closed or doesn\'t exist',
+          'Solution: Wait for frame/window, validate handle before switch',
+        ],
+        codeExplanation: 'Use frameToBeAvailableAndSwitchToIt() to wait for frame. Store window handle before operations. Verify handle validity before switching.',
+        code: `// Safe frame switch with wait
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+try {
+    wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(
+        By.id("paymentFrame")
+    ));
+} catch (TimeoutException e) {
+    // Try alternative locators
+    wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(
+        By.xpath("//iframe[contains(@src, 'payment')]")
+    ));
+}
+
+// Safe window switch
+String mainWindow = driver.getWindowHandle();
+driver.findElement(By.id("openPopup")).click();
+wait.until(ExpectedConditions.numberOfWindowsToBe(2));
+
+for (String handle : driver.getWindowHandles()) {
+    if (!handle.equals(mainWindow)) {
+        driver.switchTo().window(handle);
+        break;
+    }
+}
+
+// Always return to main window in finally block
+driver.switchTo().window(mainWindow);`,
+        codeTitle: 'Frame & Window Exception Handling',
+      },
+      {
+        title: 'NoAlertPresentException',
+        content: ['Thrown when trying to switch to an alert when none is present.'],
+        codeExplanation: 'Always wait for alert with ExpectedConditions.alertIsPresent(). Use try-catch for optional alerts. Check alert presence before switching.',
+        code: `// Wait for alert with timeout
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+try {
+    Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+    String alertText = alert.getText();
+    System.out.println("Alert message: " + alertText);
+    alert.accept();
+} catch (TimeoutException e) {
+    System.out.println("No alert appeared within timeout");
+}
+
+// Check if alert is present
+public boolean isAlertPresent() {
+    try {
+        driver.switchTo().alert();
+        return true;
+    } catch (NoAlertPresentException e) {
+        return false;
+    }
+}
+
+// Handle alert if present (for unexpected popups)
+public void handleAlertIfPresent() {
+    try {
+        Alert alert = driver.switchTo().alert();
+        System.out.println("Unexpected alert: " + alert.getText());
+        alert.dismiss();
+    } catch (NoAlertPresentException e) {
+        // No alert - continue
+    }
+}`,
+        codeTitle: 'NoAlertPresentException Handling',
+      },
+      {
+        title: 'InvalidSelectorException',
+        content: ['Thrown when XPath or CSS selector syntax is malformed.'],
+        bulletPoints: [
+          'Causes: Missing brackets, wrong quotes, invalid XPath functions',
+          'Common mistakes: Missing @ for attributes, unescaped quotes, wrong syntax',
+        ],
+        codeExplanation: 'Validate selector syntax before use. Common errors: missing @, mismatched quotes, invalid pseudo-selectors. Test selectors in browser DevTools first.',
+        code: `// ❌ WRONG: Common selector mistakes
+driver.findElement(By.xpath("//div[@class='container'")); // Missing ]
+driver.findElement(By.cssSelector("div:contains('text')")); // :contains not CSS
+driver.findElement(By.xpath("//div[class='name']")); // Missing @
+
+// ✅ CORRECT: Proper syntax
+driver.findElement(By.xpath("//div[@class='container']"));
+driver.findElement(By.xpath("//div[contains(text(), 'text')]"));
+driver.findElement(By.xpath("//div[@class='name']"));
+
+// Validate selector before use
+public WebElement findElementSafely(String locatorType, String value) {
+    try {
+        switch (locatorType.toLowerCase()) {
+            case "xpath": return driver.findElement(By.xpath(value));
+            case "css": return driver.findElement(By.cssSelector(value));
+            default: return driver.findElement(By.id(value));
+        }
+    } catch (InvalidSelectorException e) {
+        System.out.println("Invalid selector: " + value);
+        throw e;
+    }
+}`,
+        codeTitle: 'InvalidSelectorException Prevention',
+      },
+      {
+        title: 'SessionNotCreatedException',
+        content: ['Thrown when WebDriver session cannot be created (browser/driver issues).'],
+        bulletPoints: [
+          'Causes: Driver/browser version mismatch, browser not installed, port in use',
+          'Solution: Use WebDriverManager, update drivers, kill zombie processes',
+        ],
+        codeExplanation: 'WebDriverManager automatically manages driver versions. Clear cache if version issues persist. Add headless mode for CI environments. Implement browser fallback.',
+        code: `// Use WebDriverManager to handle driver versions
+WebDriverManager.chromedriver().setup();
+
+ChromeOptions options = new ChromeOptions();
+options.addArguments("--start-maximized");
+
+try {
+    WebDriver driver = new ChromeDriver(options);
+} catch (SessionNotCreatedException e) {
+    System.out.println("Session creation failed: " + e.getMessage());
+    
+    // Clear cache and retry
+    WebDriverManager.chromedriver().clearDriverCache().setup();
+    
+    // Or try headless mode for CI
+    options.addArguments("--headless=new");
+    options.addArguments("--no-sandbox");
+    options.addArguments("--disable-dev-shm-usage");
+    
+    WebDriver driver = new ChromeDriver(options);
+}`,
+        codeTitle: 'SessionNotCreatedException Handling',
+      },
+      {
+        title: 'Selenium Exceptions Quick Reference',
+        table: {
+          headers: ['Exception', 'When Thrown', 'Solution'],
+          rows: [
+            ['NoSuchElementException', 'Element not in DOM', 'Use waits, verify locator'],
+            ['StaleElementReferenceException', 'DOM updated', 'Re-find element, FluentWait'],
+            ['ElementNotInteractableException', 'Hidden/disabled', 'Wait for clickable, scroll'],
+            ['ElementClickInterceptedException', 'Overlay present', 'Close overlay, JS click'],
+            ['TimeoutException', 'Wait exceeded', 'Increase timeout, verify condition'],
+            ['NoSuchFrameException', 'Frame not found', 'Wait for frame'],
+            ['NoSuchWindowException', 'Window closed', 'Validate handle'],
+            ['NoAlertPresentException', 'No alert', 'Wait for alert'],
+            ['InvalidSelectorException', 'Bad syntax', 'Fix XPath/CSS'],
+            ['SessionNotCreatedException', 'Driver issue', 'Use WebDriverManager'],
+          ],
+        },
+      },
+      {
+        title: 'Robust Click Utility',
+        codeExplanation: 'Combines all exception handling strategies. Tries normal click first, then scroll, then JavaScript click. Use this utility for reliable element interaction.',
+        code: `public void robustClick(By locator) {
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+    JavascriptExecutor js = (JavascriptExecutor) driver;
+    
+    try {
+        // Strategy 1: Wait for clickable and click
+        wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
+    } catch (ElementNotInteractableException | ElementClickInterceptedException e1) {
+        try {
+            // Strategy 2: Scroll into view and click
+            js.executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
+            Thread.sleep(500);
+            element.click();
+        } catch (Exception e2) {
+            // Strategy 3: JavaScript click (last resort)
+            js.executeScript("arguments[0].click();", element);
+        }
+    }
+}`,
+        codeTitle: 'RobustClickUtility.java',
+      },
+      {
         title: 'Handling JavaScript Alerts',
-        codeExplanation: 'Alerts require context switch. ExpectedConditions.alertIsPresent() waits for alert. driver.switchTo().alert() returns Alert object. accept() clicks OK. dismiss() clicks Cancel. sendKeys() types in prompt.',
+        codeExplanation: 'Alerts require context switch. ExpectedConditions.alertIsPresent() waits for alert. accept() clicks OK. dismiss() clicks Cancel. sendKeys() types in prompt.',
         code: `// Wait for alert
 WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 Alert alert = wait.until(ExpectedConditions.alertIsPresent());
@@ -1016,7 +1363,7 @@ alert.accept();`,
       },
       {
         title: 'Handling Frames/iFrames',
-        codeExplanation: 'Frames isolate content. Must switch context to interact. switchTo().frame() by index, name, or WebElement. defaultContent() returns to main page. parentFrame() goes up one level.',
+        codeExplanation: 'Frames isolate content. Must switch context to interact. switchTo().frame() by index, name, or WebElement. defaultContent() returns to main page.',
         code: `// Switch by name or ID
 driver.switchTo().frame("frameName");
 
@@ -1039,7 +1386,7 @@ driver.switchTo().parentFrame();`,
       },
       {
         title: 'Handling Multiple Windows',
-        codeExplanation: 'Each window has unique handle. getWindowHandle() gets current. getWindowHandles() gets all. switchTo().window(handle) switches context. close() closes current window only.',
+        codeExplanation: 'Each window has unique handle. getWindowHandle() gets current. getWindowHandles() gets all. switchTo().window(handle) switches context.',
         code: `// Store main window
 String mainWindow = driver.getWindowHandle();
 
@@ -1064,21 +1411,8 @@ driver.switchTo().window(mainWindow);`,
         codeTitle: 'Window Handling',
       },
       {
-        title: 'Common Selenium Exceptions',
-        table: {
-          headers: ['Exception', 'Cause', 'Solution'],
-          rows: [
-            ['NoSuchElementException', 'Element not found', 'Check locator, use wait'],
-            ['StaleElementReferenceException', 'DOM changed', 'Re-find element'],
-            ['TimeoutException', 'Wait exceeded', 'Increase timeout, check condition'],
-            ['ElementNotInteractableException', 'Element hidden/disabled', 'Wait for clickable'],
-            ['NoAlertPresentException', 'No alert exists', 'Wait for alert'],
-          ],
-        },
-      },
-      {
-        title: 'Handling File Upload',
-        codeExplanation: 'File upload uses sendKeys() on input[type="file"]. Send absolute file path. Works for standard upload inputs. For custom uploaders, may need JavaScript or AutoIT.',
+        title: 'File Upload Handling',
+        codeExplanation: 'File upload uses sendKeys() on input[type="file"]. Send absolute file path. Works for standard upload inputs.',
         code: `// Standard file upload
 WebElement fileInput = driver.findElement(By.id("fileUpload"));
 String filePath = System.getProperty("user.dir") + "/testdata/document.pdf";
