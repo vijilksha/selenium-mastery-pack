@@ -1,4 +1,5 @@
 import { Section } from '@/data/sections';
+import { DownloadPPTButton } from './DownloadPPTButton';
 
 interface SectionHeaderProps {
   section: Section;
@@ -10,8 +11,11 @@ export const SectionHeader = ({ section, number }: SectionHeaderProps) => {
   
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-mono text-primary">Section {String(number).padStart(2, '0')}</span>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-mono text-primary">Section {String(number).padStart(2, '0')}</span>
+        </div>
+        <DownloadPPTButton sectionId={section.id} />
       </div>
       <div className="flex items-center gap-4">
         <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
