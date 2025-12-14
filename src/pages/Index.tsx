@@ -26,7 +26,7 @@ const Index = () => {
       <div className="flex min-h-screen bg-background">
         <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
         
-        <main className="flex-1 lg:ml-72">
+        <main className="flex-1 min-w-0">
           <div className="max-w-5xl mx-auto px-6 py-12 space-y-24">
             {/* Hero Section */}
             <header className="text-center space-y-6 py-12">
