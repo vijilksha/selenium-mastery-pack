@@ -5,6 +5,7 @@ interface SlideContent {
   content?: string[];
   code?: string;
   codeTitle?: string;
+  codeExplanation?: string;
   bulletPoints?: string[];
   table?: { headers: string[]; rows: string[][] };
 }
@@ -16,11 +17,13 @@ interface SectionPPTData {
 }
 
 const THEME = {
-  background: '0F172A',
-  primary: '14B8A6',
+  background: '0C1220',
+  primary: '3B82F6',
+  secondary: '60A5FA',
   text: 'E2E8F0',
   muted: '94A3B8',
   codeBg: '1E293B',
+  highlight: '2563EB',
 };
 
 export const generateSectionPPT = async (data: SectionPPTData) => {
@@ -115,15 +118,40 @@ export const generateSectionPPT = async (data: SectionPPTData) => {
       currentY += slideData.bulletPoints.length * 0.35;
     }
 
-    // Code block
+    // Code block with explanation
     if (slideData.code) {
-      if (slideData.codeTitle) {
-        slide.addText(slideData.codeTitle, {
+      // Add code explanation before the code block
+      if (slideData.codeExplanation) {
+        slide.addText('💡 Code Explanation:', {
           x: 0.5,
           y: currentY,
           w: '90%',
           fontSize: 10,
+          bold: true,
+          color: THEME.secondary,
+          fontFace: 'Arial',
+        });
+        currentY += 0.25;
+        
+        slide.addText(slideData.codeExplanation, {
+          x: 0.5,
+          y: currentY,
+          w: '90%',
+          fontSize: 9,
           color: THEME.muted,
+          fontFace: 'Arial',
+          breakLine: true,
+        });
+        currentY += 0.5;
+      }
+
+      if (slideData.codeTitle) {
+        slide.addText(`📄 ${slideData.codeTitle}`, {
+          x: 0.5,
+          y: currentY,
+          w: '90%',
+          fontSize: 10,
+          color: THEME.secondary,
           fontFace: 'Arial',
         });
         currentY += 0.25;
@@ -133,9 +161,9 @@ export const generateSectionPPT = async (data: SectionPPTData) => {
         x: 0.5,
         y: currentY,
         w: 9,
-        h: Math.min(3.5, slideData.code.split('\n').length * 0.18 + 0.3),
+        h: Math.min(3.2, slideData.code.split('\n').length * 0.18 + 0.3),
         fill: { color: THEME.codeBg },
-        line: { color: THEME.primary, width: 0.5 },
+        line: { color: THEME.primary, width: 1 },
       });
       
       slide.addText(slideData.code, {
@@ -244,7 +272,8 @@ export const sectionPPTContent: Record<string, SectionPPTData> = {
       },
       {
         title: 'WebDriverManager Example',
-        content: ['Use WebDriverManager to automatically handle driver setup:'],
+        content: ['Use WebDriverManager to automatically handle driver setup without manual downloads:'],
+        codeExplanation: 'This code demonstrates the basic Selenium workflow: 1) WebDriverManager.chromedriver().setup() automatically downloads and configures the Chrome driver. 2) new ChromeDriver() creates a browser instance. 3) driver.get() navigates to a URL. 4) driver.getTitle() retrieves the page title. 5) driver.quit() closes the browser and ends the session.',
         code: `// Automatic driver management
 WebDriverManager.chromedriver().setup();
 WebDriver driver = new ChromeDriver();
@@ -268,6 +297,7 @@ driver.quit();`,
     slides: [
       {
         title: 'Maven Project Structure',
+        content: ['A well-organized Maven project structure is essential for maintainability:'],
         bulletPoints: [
           'src/main/java - Application source code, Page Objects',
           'src/test/java - Test classes',
@@ -277,6 +307,8 @@ driver.quit();`,
       },
       {
         title: 'Essential Maven Dependencies',
+        content: ['Add these core dependencies to your pom.xml for a complete Selenium setup:'],
+        codeExplanation: 'The pom.xml file defines three essential dependencies: 1) selenium-java - The main Selenium WebDriver library for browser automation. 2) testng - The testing framework for organizing and executing tests with annotations. 3) webdrivermanager - Automatically handles browser driver downloads, eliminating manual setup.',
         code: `<dependencies>
   <!-- Selenium WebDriver -->
   <dependency>
@@ -303,7 +335,8 @@ driver.quit();`,
       },
       {
         title: 'BaseTest Class',
-        content: ['Create a reusable base test class for setup and teardown:'],
+        content: ['Create a reusable base test class that all test classes will extend:'],
+        codeExplanation: 'The BaseTest class provides: 1) @BeforeMethod runs before each test - sets up WebDriverManager, creates ChromeDriver, maximizes window, and sets implicit wait. 2) @AfterMethod runs after each test - safely closes the browser. 3) Protected driver variable allows access from child test classes.',
         code: `public class BaseTest {
     protected WebDriver driver;
     
@@ -327,7 +360,8 @@ driver.quit();`,
       },
       {
         title: 'Config.properties',
-        content: ['Externalize configuration for maintainability:'],
+        content: ['Externalize configuration for maintainability and environment flexibility:'],
+        codeExplanation: 'Configuration file contains: 1) Browser settings - which browser to use and headless mode toggle. 2) Application URLs - base URLs for different test environments. 3) Timeout values - configurable wait times. 4) Test credentials - login details for test accounts. This separation allows easy environment switching without code changes.',
         code: `# Browser Configuration
 browser=chrome
 headless=false
@@ -354,6 +388,8 @@ test.password=SecurePass123`,
     slides: [
       {
         title: 'Navigation Methods',
+        content: ['Essential methods for browser navigation and page control:'],
+        codeExplanation: 'Navigation methods explained: driver.get() loads a URL and waits for page load. getCurrentUrl() and getTitle() retrieve page info. navigate().to() is similar to get() but supports back/forward history. navigate().back() and forward() simulate browser buttons. refresh() reloads the current page.',
         code: `// Navigate to URL
 driver.get("https://www.coursera.org");
 
@@ -370,6 +406,8 @@ driver.navigate().refresh();`,
       },
       {
         title: 'WebElement Methods',
+        content: ['Methods for interacting with page elements:'],
+        codeExplanation: 'WebElement methods: findElement() locates an element on the page. sendKeys() types text into input fields. clear() removes existing text. click() simulates a mouse click. getText() retrieves visible text. getAttribute() gets HTML attribute values. isDisplayed(), isEnabled(), and isSelected() check element state.',
         code: `// Find element and interact
 WebElement searchBox = driver.findElement(By.id("search"));
 searchBox.sendKeys("Selenium Course");
@@ -388,6 +426,8 @@ boolean isEnabled = button.isEnabled();`,
       },
       {
         title: 'Browser Window Methods',
+        content: ['Control browser window size, position, and cookies:'],
+        codeExplanation: 'Window management: maximize() expands to full screen (recommended for testing). minimize() and fullscreen() control window state. setSize() sets exact dimensions for responsive testing. getSize() and getPosition() retrieve window properties. deleteAllCookies() clears session data for clean test starts.',
         code: `// Window management
 driver.manage().window().maximize();
 driver.manage().window().minimize();
@@ -406,6 +446,7 @@ driver.manage().deleteAllCookies();`,
       },
       {
         title: 'WebDriver Methods Summary',
+        content: ['Quick reference for the most commonly used WebDriver methods:'],
         table: {
           headers: ['Method', 'Description', 'Returns'],
           rows: [
@@ -426,6 +467,8 @@ driver.manage().deleteAllCookies();`,
     slides: [
       {
         title: 'Basic Locator Strategies',
+        content: ['Selenium provides multiple ways to locate elements on a web page:'],
+        codeExplanation: 'Locator strategies from most to least reliable: By.id() is fastest and most unique. By.name() works well for form fields. By.className() matches CSS class. By.tagName() finds all elements of a type. By.linkText() matches exact anchor text. By.partialLinkText() matches partial text in links.',
         code: `// ID - Most reliable
 driver.findElement(By.id("username"));
 
@@ -447,6 +490,8 @@ driver.findElement(By.partialLinkText("Sign"));`,
       },
       {
         title: 'CSS Selectors',
+        content: ['CSS selectors offer powerful and fast element selection:'],
+        codeExplanation: 'CSS selector syntax: # prefix selects by ID. . prefix selects by class. [attribute="value"] matches attributes. > selects direct children. Space selects any descendant. :nth-child(n) selects by position. CSS selectors are faster than XPath and preferred when possible.',
         code: `// By ID
 driver.findElement(By.cssSelector("#username"));
 
@@ -467,6 +512,8 @@ driver.findElement(By.cssSelector("ul li:nth-child(2)"));`,
       },
       {
         title: 'XPath Locators',
+        content: ['XPath provides the most flexible element location capabilities:'],
+        codeExplanation: 'XPath types: Absolute XPath starts from root (avoid - fragile). Relative XPath starts with // (preferred). @attribute accesses attributes. text() matches element text content. contains() for partial matching. starts-with() for prefix matching. XPath is powerful but slower than CSS.',
         code: `// Absolute XPath (avoid)
 driver.findElement(By.xpath("/html/body/div/form/input"));
 
@@ -484,6 +531,8 @@ driver.findElement(By.xpath("//div[contains(@class,'header')]"));`,
       },
       {
         title: 'XPath Axes',
+        content: ['XPath axes allow navigation relative to the current element:'],
+        codeExplanation: 'XPath axes explained: parent:: moves to parent element. following-sibling:: finds next siblings at same level. preceding-sibling:: finds previous siblings. ancestor:: finds any parent in hierarchy. // descendant finds any child at any level. Axes are essential when direct locators are unavailable.',
         code: `// Parent element
 driver.findElement(By.xpath("//input[@id='email']/parent::div"));
 
@@ -532,6 +581,8 @@ driver.findElement(By.xpath("//form[@id='login']//input"));`,
       },
       {
         title: 'Handling Dynamic Elements',
+        content: ['Strategies for locating elements with changing attributes:'],
+        codeExplanation: 'Dynamic element strategies: [id^="user_"] uses CSS "starts-with" for dynamic ID prefixes. [class*="active"] uses CSS "contains" for partial class matching. data-testid attributes provide stable locators (request from developers). XPath axes like following-sibling find elements based on relationships rather than attributes.',
         code: `// Dynamic ID: user_12345 -> user_67890
 // Use starts-with or contains
 driver.findElement(By.cssSelector("[id^='user_']"));
@@ -551,6 +602,7 @@ driver.findElement(By.xpath(
       },
       {
         title: 'Corporate Best Practices',
+        content: ['Industry-standard practices for locator management in enterprise projects:'],
         bulletPoints: [
           'Request data-testid attributes from development team',
           'Maintain a locator strategy document',
@@ -579,6 +631,8 @@ driver.findElement(By.xpath(
       },
       {
         title: 'Thread.sleep() - Avoid This!',
+        content: ['Why Thread.sleep() is considered a bad practice in test automation:'],
+        codeExplanation: 'Thread.sleep() is an anti-pattern because: 1) It always waits the full duration even if the element appears immediately. 2) It may still fail if the element takes longer than expected. 3) It slows down test execution significantly. 4) It makes tests unreliable and unprofessional.',
         code: `// BAD PRACTICE - Fixed wait regardless of condition
 Thread.sleep(5000); // Waits 5 seconds ALWAYS
 
@@ -590,6 +644,8 @@ Thread.sleep(5000); // Waits 5 seconds ALWAYS
       },
       {
         title: 'Implicit Wait',
+        content: ['A global wait that applies to all element searches:'],
+        codeExplanation: 'Implicit wait explained: Set once, it applies to ALL findElement calls. The driver polls the DOM for the specified duration until the element is found. Limitations: same timeout for all elements, cannot wait for specific conditions like visibility or clickability, can interfere with explicit waits unpredictably.',
         code: `// Set once, applies to all findElement calls
 driver.manage().timeouts()
     .implicitlyWait(Duration.ofSeconds(10));
@@ -605,6 +661,8 @@ WebElement element = driver.findElement(By.id("search"));
       },
       {
         title: 'Explicit Wait (Recommended)',
+        content: ['The most flexible and reliable wait strategy:'],
+        codeExplanation: 'Explicit wait is the recommended approach: WebDriverWait with ExpectedConditions waits for specific conditions. visibilityOfElementLocated() waits until element is visible. elementToBeClickable() ensures element can receive clicks. urlContains() waits for navigation. textToBePresentInElementLocated() waits for text content.',
         code: `WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
 // Wait for element to be visible
@@ -626,6 +684,8 @@ wait.until(ExpectedConditions.textToBePresentInElementLocated(
       },
       {
         title: 'Fluent Wait',
+        content: ['The most configurable wait with custom polling and exception handling:'],
+        codeExplanation: 'Fluent wait provides maximum control: withTimeout() sets total wait duration. pollingEvery() sets check frequency (default 500ms). ignoring() specifies exceptions to suppress during polling. Custom functions allow complex conditions. Use for unstable elements or complex scenarios.',
         code: `Wait<WebDriver> fluentWait = new FluentWait<>(driver)
     .withTimeout(Duration.ofSeconds(30))
     .pollingEvery(Duration.ofMillis(500))
@@ -646,7 +706,8 @@ WebElement element = fluentWait.until(driver -> {
     slides: [
       {
         title: 'Page Object Model Pattern',
-        content: ['POM separates test logic from page structure for maintainability.'],
+        content: ['POM separates test logic from page structure for maintainability:'],
+        codeExplanation: 'Page Object Model explained: The class encapsulates all locators and actions for one page. Private locators are stored as By objects for reusability. Constructor takes WebDriver and initializes WebDriverWait. Public methods represent user actions (login, search). This separation means locator changes only require updates in one place.',
         code: `public class LoginPage {
     private WebDriver driver;
     private WebDriverWait wait;
@@ -672,6 +733,8 @@ WebElement element = fluentWait.until(driver -> {
       },
       {
         title: 'Coursera Login Test',
+        content: ['A complete test class using Page Object Model:'],
+        codeExplanation: 'Test class structure: Extends BaseTest to inherit setup/teardown. @BeforeMethod initializes page objects before each test. @Test method contains the actual test logic. Test reads like user actions: navigate, enter credentials, click, verify. Assert.assertTrue validates the expected outcome.',
         code: `public class CourseraLoginTest extends BaseTest {
     private CourseraLoginPage loginPage;
     
@@ -696,6 +759,8 @@ WebElement element = fluentWait.until(driver -> {
       },
       {
         title: 'BookMyShow Booking Flow',
+        content: ['End-to-end test demonstrating multi-page workflow:'],
+        codeExplanation: 'E2E test flow: Multiple page objects represent different screens (HomePage, MoviePage, SeatSelectionPage). Test simulates complete user journey: select city, search movie, choose theatre and time, select seats. Each page object handles its own elements. Final assertion verifies the expected end state.',
         code: `public class BookMyShowTest extends BaseTest {
     @Test
     public void testMovieBookingFlow() {
@@ -728,6 +793,7 @@ WebElement element = fluentWait.until(driver -> {
     slides: [
       {
         title: 'TestNG Annotations',
+        content: ['TestNG provides annotations to control test execution flow:'],
         bulletPoints: [
           '@BeforeSuite - Runs once before all tests in suite',
           '@BeforeTest - Runs before each <test> tag in testng.xml',
@@ -742,6 +808,8 @@ WebElement element = fluentWait.until(driver -> {
       },
       {
         title: 'Test Annotations Example',
+        content: ['Demonstrating TestNG lifecycle and test dependencies:'],
+        codeExplanation: 'TestNG lifecycle: @BeforeClass runs once before any tests in the class (setup resources). @BeforeMethod runs before EACH test method (reset state). @Test marks test methods - priority controls execution order, dependsOnMethods creates test dependencies. @AfterMethod runs after each test (cleanup). The execution order ensures proper setup and teardown.',
         code: `public class TestNGLifecycle {
     @BeforeClass
     public void setupClass() {
@@ -772,6 +840,8 @@ WebElement element = fluentWait.until(driver -> {
       },
       {
         title: 'Assertions',
+        content: ['Two types of assertions for different testing needs:'],
+        codeExplanation: 'Hard assertions (Assert class): Stop test immediately on failure - use for critical validations. Soft assertions (SoftAssert class): Continue execution after failures - collect all failures and report at end with assertAll(). Use soft assertions when you want to verify multiple conditions in one test.',
         code: `// Hard Assertions - Stop on failure
 Assert.assertEquals(actual, expected, "Values should match");
 Assert.assertTrue(condition, "Condition should be true");
@@ -787,6 +857,8 @@ soft.assertAll(); // Reports all failures at end`,
       },
       {
         title: 'testng.xml Configuration',
+        content: ['Configure test suites, parallel execution, and test grouping:'],
+        codeExplanation: 'testng.xml structure: <suite> is the root element - parallel="tests" runs tests in parallel, thread-count sets concurrency. <test> groups related classes. <groups> filters tests by @Test(groups="smoke"). <classes> lists test classes to run. This XML enables flexible test organization and CI/CD integration.',
         code: `<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <suite name="Selenium Test Suite" parallel="tests" thread-count="3">
     <test name="Smoke Tests">
@@ -817,6 +889,8 @@ soft.assertAll(); // Reports all failures at end`,
     slides: [
       {
         title: 'Handling Alerts',
+        content: ['JavaScript alerts require switching context to interact:'],
+        codeExplanation: 'Alert handling process: 1) Use ExpectedConditions.alertIsPresent() to wait for and detect alerts. 2) driver.switchTo().alert() returns the Alert object. 3) getText() retrieves the alert message. 4) accept() clicks OK/Yes. 5) dismiss() clicks Cancel/No. 6) sendKeys() types into prompt dialogs.',
         code: `// Wait for and switch to alert
 WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 Alert alert = wait.until(ExpectedConditions.alertIsPresent());
@@ -837,6 +911,8 @@ alert.accept();`,
       },
       {
         title: 'Handling Frames',
+        content: ['Frames (iframes) create separate DOM contexts:'],
+        codeExplanation: 'Frame switching: Elements inside frames are invisible until you switch context. Switch by index (0-based), name/ID attribute, or WebElement reference. After switching, all findElement calls operate within that frame. defaultContent() returns to the main page. parentFrame() moves up one level in nested frames.',
         code: `// Switch by index
 driver.switchTo().frame(0);
 
@@ -859,6 +935,8 @@ driver.switchTo().parentFrame();`,
       },
       {
         title: 'Handling Multiple Windows',
+        content: ['Managing multiple browser windows and tabs:'],
+        codeExplanation: 'Window handling: getWindowHandle() stores current window ID. After clicking a link that opens new window, getWindowHandles() returns all open window IDs. Loop through and switch to the new window using switchTo().window(). Perform actions, then close() the new window and switch back to original.',
         code: `// Store original window handle
 String originalWindow = driver.getWindowHandle();
 
@@ -886,6 +964,8 @@ driver.switchTo().window(originalWindow);`,
       },
       {
         title: 'Screenshot on Failure',
+        content: ['Capture screenshots for debugging failed tests:'],
+        codeExplanation: 'Screenshot utility: Cast driver to TakesScreenshot interface. getScreenshotAs(OutputType.FILE) captures the visible viewport. Create a timestamped filename for uniqueness. FileUtils.copyFile() saves to disk. Call this from @AfterMethod when test fails, or integrate with TestNG listeners for automatic capture.',
         code: `public class ScreenshotUtil {
     public static void captureScreenshot(WebDriver driver, String testName) {
         try {
@@ -913,6 +993,7 @@ driver.switchTo().window(originalWindow);`,
     slides: [
       {
         title: 'Page Object Model Benefits',
+        content: ['Why POM is the industry standard for test automation frameworks:'],
         bulletPoints: [
           'Separation of concerns - Test logic vs Page structure',
           'Reusability - Page methods used across multiple tests',
@@ -923,6 +1004,8 @@ driver.switchTo().window(originalWindow);`,
       },
       {
         title: 'Page Factory Pattern',
+        content: ['An enhanced approach to Page Object Model using annotations:'],
+        codeExplanation: 'Page Factory benefits: @FindBy annotations declare locators directly on WebElement fields - cleaner than By objects. PageFactory.initElements() initializes all annotated elements using lazy loading. Elements are found only when first accessed. This reduces boilerplate code and improves readability.',
         code: `public class LoginPage {
     private WebDriver driver;
     
@@ -950,6 +1033,8 @@ driver.switchTo().window(originalWindow);`,
       },
       {
         title: 'Logging with Log4j',
+        content: ['Implement comprehensive logging for debugging and reporting:'],
+        codeExplanation: 'Log4j implementation: LogManager.getLogger() creates a logger for each class. logger.info() records important events. logger.debug() records detailed info for troubleshooting. logger.error() records failures. ITestResult in @AfterMethod provides test outcome. Combine with screenshot capture for complete failure documentation.',
         code: `public class BaseTest {
     protected static final Logger logger = LogManager.getLogger(BaseTest.class);
     protected WebDriver driver;
@@ -975,6 +1060,7 @@ driver.switchTo().window(originalWindow);`,
       },
       {
         title: 'Folder Structure',
+        content: ['Recommended project structure for enterprise automation frameworks:'],
         bulletPoints: [
           'src/main/java/pages - Page Object classes',
           'src/main/java/utils - Utility classes (DriverManager, ConfigReader)',
