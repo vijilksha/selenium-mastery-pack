@@ -30,12 +30,10 @@ const THEME = {
 export const generateSectionPPT = async (data: SectionPPTData) => {
   const pptx = new pptxgen();
   
-  // Set presentation properties
   pptx.author = 'Selenium Training Platform';
   pptx.title = data.sectionTitle;
   pptx.subject = 'Selenium WebDriver Training';
   
-  // Define master slide
   pptx.defineSlideMaster({
     title: 'MAIN_SLIDE',
     background: { color: THEME.background },
@@ -44,65 +42,34 @@ export const generateSectionPPT = async (data: SectionPPTData) => {
   // Title Slide
   const titleSlide = pptx.addSlide({ masterName: 'MAIN_SLIDE' });
   titleSlide.addText(`Section ${String(data.sectionNumber).padStart(2, '0')}`, {
-    x: 0.5,
-    y: 1.5,
-    w: '90%',
-    fontSize: 18,
-    color: THEME.primary,
-    fontFace: 'Arial',
+    x: 0.5, y: 1.5, w: '90%', fontSize: 18, color: THEME.primary, fontFace: 'Arial',
   });
   titleSlide.addText(data.sectionTitle, {
-    x: 0.5,
-    y: 2,
-    w: '90%',
-    fontSize: 36,
-    bold: true,
-    color: THEME.text,
-    fontFace: 'Arial',
+    x: 0.5, y: 2, w: '90%', fontSize: 36, bold: true, color: THEME.text, fontFace: 'Arial',
   });
   titleSlide.addText('Selenium WebDriver Training Platform', {
-    x: 0.5,
-    y: 4.5,
-    w: '90%',
-    fontSize: 14,
-    color: THEME.muted,
-    fontFace: 'Arial',
+    x: 0.5, y: 4.5, w: '90%', fontSize: 14, color: THEME.muted, fontFace: 'Arial',
   });
 
   // Content Slides
   for (const slideData of data.slides) {
     const slide = pptx.addSlide({ masterName: 'MAIN_SLIDE' });
     
-    // Slide title
     slide.addText(slideData.title, {
-      x: 0.5,
-      y: 0.3,
-      w: '90%',
-      fontSize: 24,
-      bold: true,
-      color: THEME.primary,
-      fontFace: 'Arial',
+      x: 0.5, y: 0.3, w: '90%', fontSize: 24, bold: true, color: THEME.primary, fontFace: 'Arial',
     });
 
     let currentY = 0.9;
 
-    // Content paragraphs
     if (slideData.content && slideData.content.length > 0) {
       for (const paragraph of slideData.content) {
         slide.addText(paragraph, {
-          x: 0.5,
-          y: currentY,
-          w: '90%',
-          fontSize: 12,
-          color: THEME.text,
-          fontFace: 'Arial',
-          breakLine: true,
+          x: 0.5, y: currentY, w: '90%', fontSize: 12, color: THEME.text, fontFace: 'Arial', breakLine: true,
         });
         currentY += 0.5;
       }
     }
 
-    // Bullet points
     if (slideData.bulletPoints && slideData.bulletPoints.length > 0) {
       const bullets = slideData.bulletPoints.map(point => ({
         text: point,
@@ -110,75 +77,43 @@ export const generateSectionPPT = async (data: SectionPPTData) => {
       }));
       
       slide.addText(bullets, {
-        x: 0.5,
-        y: currentY,
-        w: '90%',
-        fontSize: 11,
-        fontFace: 'Arial',
+        x: 0.5, y: currentY, w: '90%', fontSize: 11, fontFace: 'Arial',
       });
       currentY += slideData.bulletPoints.length * 0.35;
     }
 
-    // Code block with explanation
     if (slideData.code) {
-      // Add code explanation before the code block
       if (slideData.codeExplanation) {
         slide.addText('💡 Code Explanation:', {
-          x: 0.5,
-          y: currentY,
-          w: '90%',
-          fontSize: 10,
-          bold: true,
-          color: THEME.secondary,
-          fontFace: 'Arial',
+          x: 0.5, y: currentY, w: '90%', fontSize: 10, bold: true, color: THEME.secondary, fontFace: 'Arial',
         });
         currentY += 0.25;
         
         slide.addText(slideData.codeExplanation, {
-          x: 0.5,
-          y: currentY,
-          w: '90%',
-          fontSize: 9,
-          color: THEME.muted,
-          fontFace: 'Arial',
-          breakLine: true,
+          x: 0.5, y: currentY, w: '90%', fontSize: 9, color: THEME.muted, fontFace: 'Arial', breakLine: true,
         });
         currentY += 0.5;
       }
 
       if (slideData.codeTitle) {
         slide.addText(`📄 ${slideData.codeTitle}`, {
-          x: 0.5,
-          y: currentY,
-          w: '90%',
-          fontSize: 10,
-          color: THEME.secondary,
-          fontFace: 'Arial',
+          x: 0.5, y: currentY, w: '90%', fontSize: 10, color: THEME.secondary, fontFace: 'Arial',
         });
         currentY += 0.25;
       }
       
       slide.addShape('rect', {
-        x: 0.5,
-        y: currentY,
-        w: 9,
+        x: 0.5, y: currentY, w: 9,
         h: Math.min(3.2, slideData.code.split('\n').length * 0.18 + 0.3),
         fill: { color: THEME.codeBg },
         line: { color: THEME.primary, width: 1 },
       });
       
       slide.addText(slideData.code, {
-        x: 0.6,
-        y: currentY + 0.1,
-        w: 8.8,
-        fontSize: 8,
-        color: THEME.text,
-        fontFace: 'Courier New',
-        valign: 'top',
+        x: 0.6, y: currentY + 0.1, w: 8.8, fontSize: 8, color: THEME.text, fontFace: 'Courier New', valign: 'top',
       });
     }
 
-    // Table
     if (slideData.table) {
       const tableData = [
         slideData.table.headers.map(h => ({ text: h, options: { bold: true, fill: { color: THEME.codeBg }, color: THEME.primary } })),
@@ -188,43 +123,24 @@ export const generateSectionPPT = async (data: SectionPPTData) => {
       ];
       
       slide.addTable(tableData, {
-        x: 0.5,
-        y: currentY,
-        w: 9,
-        fontSize: 9,
-        fontFace: 'Arial',
+        x: 0.5, y: currentY, w: 9, fontSize: 9, fontFace: 'Arial',
         border: { type: 'solid', color: THEME.primary, pt: 0.5 },
       });
     }
   }
 
-  // Thank you slide
+  // End slide
   const endSlide = pptx.addSlide({ masterName: 'MAIN_SLIDE' });
   endSlide.addText('End of Section', {
-    x: 0.5,
-    y: 2,
-    w: '90%',
-    fontSize: 32,
-    bold: true,
-    color: THEME.primary,
-    fontFace: 'Arial',
-    align: 'center',
+    x: 0.5, y: 2, w: '90%', fontSize: 32, bold: true, color: THEME.primary, fontFace: 'Arial', align: 'center',
   });
   endSlide.addText(`${data.sectionTitle} - Completed`, {
-    x: 0.5,
-    y: 3,
-    w: '90%',
-    fontSize: 18,
-    color: THEME.text,
-    fontFace: 'Arial',
-    align: 'center',
+    x: 0.5, y: 3, w: '90%', fontSize: 18, color: THEME.text, fontFace: 'Arial', align: 'center',
   });
 
-  // Download
   await pptx.writeFile({ fileName: `Section_${String(data.sectionNumber).padStart(2, '0')}_${data.sectionTitle.replace(/[^a-zA-Z0-9]/g, '_')}.pptx` });
 };
 
-// Section-specific content generators
 export const sectionPPTContent: Record<string, SectionPPTData> = {
   'selenium-basics': {
     sectionTitle: 'Selenium Basics',
@@ -243,40 +159,39 @@ export const sectionPPTContent: Record<string, SectionPPTData> = {
       {
         title: 'Selenium Components',
         bulletPoints: [
-          'Selenium IDE - Record and playback browser extension',
-          'Selenium WebDriver - Programming interface for browser automation',
-          'Selenium Grid - Distributed test execution across machines',
-          'Selenium RC (Deprecated) - Legacy remote control server',
+          'Selenium IDE - Record and playback browser extension for quick test creation',
+          'Selenium WebDriver - Core automation API for browser control (industry standard)',
+          'Selenium Grid - Parallel execution across multiple machines and browsers',
+          'Selenium RC (Deprecated) - Legacy component replaced by WebDriver',
         ],
       },
       {
         title: 'WebDriver Architecture',
-        content: ['WebDriver uses a client-server architecture with JSON Wire Protocol (W3C standard).'],
+        content: ['WebDriver follows client-server architecture using W3C WebDriver Protocol.'],
         bulletPoints: [
-          'Client: Your test code written in Java/Python/etc.',
-          'JSON Wire Protocol: Communication standard between client and driver',
-          'Browser Driver: ChromeDriver, GeckoDriver, EdgeDriver',
-          'Browser: Actual browser instance being automated',
+          'Test Script (Java) → Selenium Client Library → JSON Wire Protocol',
+          'JSON Wire Protocol → Browser Driver (ChromeDriver/GeckoDriver)',
+          'Browser Driver → Browser (Chrome/Firefox/Edge)',
+          'Browser Driver translates commands to browser-native actions',
         ],
       },
       {
-        title: 'Browser Drivers',
+        title: 'Selenium 3 vs Selenium 4',
         table: {
-          headers: ['Browser', 'Driver', 'Download Source'],
+          headers: ['Feature', 'Selenium 3', 'Selenium 4'],
           rows: [
-            ['Chrome', 'ChromeDriver', 'chromedriver.chromium.org'],
-            ['Firefox', 'GeckoDriver', 'github.com/mozilla/geckodriver'],
-            ['Edge', 'MSEdgeDriver', 'developer.microsoft.com'],
-            ['Safari', 'SafariDriver', 'Built into macOS'],
+            ['Protocol', 'JSON Wire Protocol', 'W3C WebDriver Protocol'],
+            ['Relative Locators', 'Not Available', 'Available (above, below, near)'],
+            ['Chrome DevTools', 'Not Supported', 'Native CDP Support'],
+            ['New Window/Tab', 'JavaScript workaround', 'driver.switchTo().newWindow()'],
+            ['Shadow DOM', 'JavaScript only', 'Native getShadowRoot()'],
           ],
         },
       },
       {
-        title: 'WebDriverManager Example',
-        content: ['Use WebDriverManager to automatically handle driver setup without manual downloads:'],
-        codeExplanation: 'This code demonstrates the basic Selenium workflow: 1) WebDriverManager.chromedriver().setup() automatically downloads and configures the Chrome driver. 2) new ChromeDriver() creates a browser instance. 3) driver.get() navigates to a URL. 4) driver.getTitle() retrieves the page title. 5) driver.quit() closes the browser and ends the session.',
-        code: `// Automatic driver management
-WebDriverManager.chromedriver().setup();
+        title: 'Basic WebDriver Example',
+        codeExplanation: 'This code shows the basic Selenium workflow: 1) new ChromeDriver() creates browser instance. 2) driver.get() navigates to URL and waits for page load. 3) driver.getTitle() retrieves the page title. 4) driver.quit() closes browser and ends session.',
+        code: `// Initialize ChromeDriver (Selenium 4.6+ auto-manages drivers)
 WebDriver driver = new ChromeDriver();
 
 // Navigate to URL
@@ -286,9 +201,29 @@ driver.get("https://www.coursera.org");
 String title = driver.getTitle();
 System.out.println("Page Title: " + title);
 
-// Close browser
+// Get current URL
+String url = driver.getCurrentUrl();
+
+// Close browser and end session
 driver.quit();`,
         codeTitle: 'BasicSeleniumTest.java',
+      },
+      {
+        title: 'Browser Options Configuration',
+        codeExplanation: 'ChromeOptions customizes browser behavior: addArguments() sets command-line flags. --headless runs without UI. --disable-notifications prevents popups. setExperimentalOption() configures advanced settings like download directory.',
+        code: `ChromeOptions options = new ChromeOptions();
+options.addArguments("--start-maximized");
+options.addArguments("--headless=new");
+options.addArguments("--disable-notifications");
+options.addArguments("--incognito");
+
+// Set download directory
+HashMap<String, Object> prefs = new HashMap<>();
+prefs.put("download.default_directory", "/path/to/downloads");
+options.setExperimentalOption("prefs", prefs);
+
+WebDriver driver = new ChromeDriver(options);`,
+        codeTitle: 'Browser Configuration',
       },
     ],
   },
@@ -298,34 +233,29 @@ driver.quit();`,
     slides: [
       {
         title: 'Maven Project Structure',
-        content: ['A well-organized Maven project structure is essential for maintainability:'],
+        content: ['A well-organized Maven project structure for Selenium automation:'],
         bulletPoints: [
-          'src/main/java - Application source code, Page Objects',
-          'src/test/java - Test classes',
-          'src/test/resources - Test data, config files',
+          'src/main/java - Page Objects, Utilities, Base classes',
+          'src/test/java - Test classes organized by module',
+          'src/test/resources - config.properties, testdata files, testng.xml',
           'pom.xml - Maven dependencies and build configuration',
+          'drivers/ - Browser drivers (optional with WebDriverManager)',
         ],
       },
       {
         title: 'Essential Maven Dependencies',
-        content: ['Add these core dependencies to your pom.xml for a complete Selenium setup:'],
-        codeExplanation: 'The pom.xml file defines three essential dependencies: 1) selenium-java - The main Selenium WebDriver library for browser automation. 2) testng - The testing framework for organizing and executing tests with annotations. 3) webdrivermanager - Automatically handles browser driver downloads, eliminating manual setup.',
+        codeExplanation: 'pom.xml dependencies: selenium-java for WebDriver APIs. testng for test framework. webdrivermanager for automatic driver management. poi for Excel data-driven testing. extentreports for HTML reports.',
         code: `<dependencies>
-  <!-- Selenium WebDriver -->
   <dependency>
     <groupId>org.seleniumhq.selenium</groupId>
     <artifactId>selenium-java</artifactId>
     <version>4.15.0</version>
   </dependency>
-  
-  <!-- TestNG -->
   <dependency>
     <groupId>org.testng</groupId>
     <artifactId>testng</artifactId>
     <version>7.8.0</version>
   </dependency>
-  
-  <!-- WebDriverManager -->
   <dependency>
     <groupId>io.github.bonigarcia</groupId>
     <artifactId>webdrivermanager</artifactId>
@@ -335,50 +265,78 @@ driver.quit();`,
         codeTitle: 'pom.xml',
       },
       {
+        title: 'DriverFactory with ThreadLocal',
+        codeExplanation: 'ThreadLocal ensures thread safety in parallel execution. Each thread gets its own WebDriver instance. initDriver() creates and configures the driver. quitDriver() closes browser and removes thread reference.',
+        code: `public class DriverFactory {
+    private static ThreadLocal<WebDriver> driver = new ThreadLocal<>();
+    
+    public static WebDriver getDriver() {
+        return driver.get();
+    }
+    
+    public static void initDriver(String browser) {
+        WebDriver webDriver;
+        switch (browser.toLowerCase()) {
+            case "chrome":
+                webDriver = new ChromeDriver();
+                break;
+            case "firefox":
+                webDriver = new FirefoxDriver();
+                break;
+            default:
+                webDriver = new ChromeDriver();
+        }
+        driver.set(webDriver);
+        driver.get().manage().window().maximize();
+    }
+    
+    public static void quitDriver() {
+        if (driver.get() != null) {
+            driver.get().quit();
+            driver.remove();
+        }
+    }
+}`,
+        codeTitle: 'DriverFactory.java',
+      },
+      {
         title: 'BaseTest Class',
-        content: ['Create a reusable base test class that all test classes will extend:'],
-        codeExplanation: 'The BaseTest class provides: 1) @BeforeMethod runs before each test - sets up WebDriverManager, creates ChromeDriver, maximizes window, and sets implicit wait. 2) @AfterMethod runs after each test - safely closes the browser. 3) Protected driver variable allows access from child test classes.',
+        codeExplanation: '@Parameters reads browser from testng.xml. @Optional provides default value. @BeforeMethod runs before each test. @AfterMethod captures screenshot on failure and closes browser.',
         code: `public class BaseTest {
     protected WebDriver driver;
     
+    @Parameters({"browser"})
     @BeforeMethod
-    public void setUp() {
-        WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
-        driver.manage().window().maximize();
-        driver.manage().timeouts()
-            .implicitlyWait(Duration.ofSeconds(10));
+    public void setUp(@Optional("chrome") String browser) {
+        DriverFactory.initDriver(browser);
+        driver = DriverFactory.getDriver();
     }
     
     @AfterMethod
-    public void tearDown() {
-        if (driver != null) {
-            driver.quit();
+    public void tearDown(ITestResult result) {
+        if (result.getStatus() == ITestResult.FAILURE) {
+            captureScreenshot(result.getName());
         }
+        DriverFactory.quitDriver();
     }
 }`,
         codeTitle: 'BaseTest.java',
       },
       {
-        title: 'Config.properties',
-        content: ['Externalize configuration for maintainability and environment flexibility:'],
-        codeExplanation: 'Configuration file contains: 1) Browser settings - which browser to use and headless mode toggle. 2) Application URLs - base URLs for different test environments. 3) Timeout values - configurable wait times. 4) Test credentials - login details for test accounts. This separation allows easy environment switching without code changes.',
+        title: 'Configuration Properties',
+        codeExplanation: 'config.properties externalizes settings. Browser and URL can be changed without code changes. Timeouts are configurable for different environments. ConfigReader utility reads and provides type-safe access.',
         code: `# Browser Configuration
 browser=chrome
 headless=false
 
 # Application URLs
-base.url=https://www.coursera.org
-bookmyshow.url=https://www.bookmyshow.com
+baseUrl=https://www.coursera.org
+bookmyshowUrl=https://www.bookmyshow.com
 
-# Timeouts
-implicit.wait=10
-explicit.wait=15
-page.load.timeout=30
-
-# Test Data
-test.username=testuser@example.com
-test.password=SecurePass123`,
+# Timeouts (seconds)
+implicitWait=10
+explicitWait=15
+pageLoadTimeout=30`,
         codeTitle: 'config.properties',
       },
     ],
@@ -389,76 +347,116 @@ test.password=SecurePass123`,
     slides: [
       {
         title: 'Navigation Methods',
-        content: ['Essential methods for browser navigation and page control:'],
-        codeExplanation: 'Navigation methods explained: driver.get() loads a URL and waits for page load. getCurrentUrl() and getTitle() retrieve page info. navigate().to() is similar to get() but supports back/forward history. navigate().back() and forward() simulate browser buttons. refresh() reloads the current page.',
-        code: `// Navigate to URL
-driver.get("https://www.coursera.org");
-
-// Get current URL and title
-String url = driver.getCurrentUrl();
-String title = driver.getTitle();
-
-// Navigation controls
-driver.navigate().to("https://www.google.com");
+        codeExplanation: 'driver.get() loads URL and waits for page load. navigate().to() is similar but supports history. back() and forward() simulate browser buttons. refresh() reloads current page.',
+        code: `driver.get("https://www.coursera.org");
+driver.navigate().to("https://www.bookmyshow.com");
 driver.navigate().back();
 driver.navigate().forward();
-driver.navigate().refresh();`,
+driver.navigate().refresh();
+
+String title = driver.getTitle();
+String url = driver.getCurrentUrl();
+String source = driver.getPageSource();`,
         codeTitle: 'Navigation Examples',
       },
       {
         title: 'WebElement Methods',
-        content: ['Methods for interacting with page elements:'],
-        codeExplanation: 'WebElement methods: findElement() locates an element on the page. sendKeys() types text into input fields. clear() removes existing text. click() simulates a mouse click. getText() retrieves visible text. getAttribute() gets HTML attribute values. isDisplayed(), isEnabled(), and isSelected() check element state.',
-        code: `// Find element and interact
-WebElement searchBox = driver.findElement(By.id("search"));
-searchBox.sendKeys("Selenium Course");
-searchBox.clear();
+        codeExplanation: 'findElement() locates element on page. sendKeys() types text. clear() removes text. click() simulates mouse click. getText() gets visible text. getAttribute() gets HTML attribute. isDisplayed()/isEnabled()/isSelected() check state.',
+        code: `WebElement element = driver.findElement(By.id("username"));
+element.sendKeys("testuser@email.com");
+element.clear();
+element.click();
 
-// Click actions
-WebElement button = driver.findElement(By.cssSelector(".submit-btn"));
-button.click();
-
-// Get element properties
-String text = button.getText();
-String value = searchBox.getAttribute("value");
-boolean isVisible = button.isDisplayed();
-boolean isEnabled = button.isEnabled();`,
+String text = element.getText();
+String value = element.getAttribute("value");
+boolean visible = element.isDisplayed();
+boolean enabled = element.isEnabled();
+boolean selected = element.isSelected();`,
         codeTitle: 'WebElement Interactions',
       },
       {
-        title: 'Browser Window Methods',
-        content: ['Control browser window size, position, and cookies:'],
-        codeExplanation: 'Window management: maximize() expands to full screen (recommended for testing). minimize() and fullscreen() control window state. setSize() sets exact dimensions for responsive testing. getSize() and getPosition() retrieve window properties. deleteAllCookies() clears session data for clean test starts.',
-        code: `// Window management
-driver.manage().window().maximize();
-driver.manage().window().minimize();
-driver.manage().window().fullscreen();
+        title: 'Actions Class - Advanced Interactions',
+        codeExplanation: 'Actions class handles complex interactions: moveToElement() for hover. dragAndDrop() for drag operations. contextClick() for right-click. doubleClick() for double-click. keyDown()/keyUp() for keyboard combinations.',
+        code: `Actions actions = new Actions(driver);
 
-// Set specific size
-driver.manage().window().setSize(new Dimension(1280, 720));
+// Mouse hover
+actions.moveToElement(menuItem).perform();
 
-// Get window size and position
-Dimension size = driver.manage().window().getSize();
-Point position = driver.manage().window().getPosition();
+// Drag and drop
+actions.dragAndDrop(source, target).perform();
 
-// Cookie management
-driver.manage().deleteAllCookies();`,
-        codeTitle: 'Browser Commands',
+// Right-click
+actions.contextClick(element).perform();
+
+// Keyboard shortcuts (Ctrl+A)
+actions.keyDown(Keys.CONTROL).sendKeys("a")
+       .keyUp(Keys.CONTROL).perform();
+
+// Chained actions
+actions.moveToElement(menu)
+       .pause(Duration.ofMillis(500))
+       .click(submenu)
+       .perform();`,
+        codeTitle: 'Actions Class',
       },
       {
-        title: 'WebDriver Methods Summary',
-        content: ['Quick reference for the most commonly used WebDriver methods:'],
-        table: {
-          headers: ['Method', 'Description', 'Returns'],
-          rows: [
-            ['get(url)', 'Navigate to URL', 'void'],
-            ['getTitle()', 'Get page title', 'String'],
-            ['getCurrentUrl()', 'Get current URL', 'String'],
-            ['getPageSource()', 'Get HTML source', 'String'],
-            ['close()', 'Close current window', 'void'],
-            ['quit()', 'Close all windows', 'void'],
-          ],
-        },
+        title: 'JavaScript Executor',
+        codeExplanation: 'JavaScriptExecutor runs JavaScript in browser. Useful when Selenium methods fail. executeScript() runs synchronous JS. Common uses: scroll, click hidden elements, set values, trigger events.',
+        code: `JavascriptExecutor js = (JavascriptExecutor) driver;
+
+// Click element (when regular click fails)
+js.executeScript("arguments[0].click();", element);
+
+// Scroll to element
+js.executeScript("arguments[0].scrollIntoView(true);", element);
+
+// Scroll to bottom of page
+js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+
+// Set value directly
+js.executeScript("arguments[0].value = 'test';", inputField);
+
+// Highlight element (debugging)
+js.executeScript("arguments[0].style.border='3px solid red';", element);`,
+        codeTitle: 'JavaScript Executor',
+      },
+      {
+        title: 'Select Class for Dropdowns',
+        codeExplanation: 'Select class works with <select> HTML elements. selectByVisibleText() matches option text. selectByValue() matches value attribute. selectByIndex() selects by position. getOptions() returns all options.',
+        code: `WebElement dropdown = driver.findElement(By.id("country"));
+Select select = new Select(dropdown);
+
+// Selection methods
+select.selectByVisibleText("India");
+select.selectByValue("IN");
+select.selectByIndex(5);
+
+// Get selected option
+WebElement selected = select.getFirstSelectedOption();
+String selectedText = selected.getText();
+
+// Get all options
+List<WebElement> options = select.getOptions();
+
+// Check if multi-select
+boolean isMultiple = select.isMultiple();`,
+        codeTitle: 'Dropdown Handling',
+      },
+      {
+        title: 'Screenshot Capture',
+        codeExplanation: 'TakesScreenshot interface captures screenshots. getScreenshotAs() returns file, bytes, or base64. OutputType.FILE saves as file. Selenium 4 supports element-level screenshots.',
+        code: `// Full page screenshot
+TakesScreenshot ts = (TakesScreenshot) driver;
+File source = ts.getScreenshotAs(OutputType.FILE);
+FileUtils.copyFile(source, new File("screenshot.png"));
+
+// Get as Base64 (for reports)
+String base64 = ts.getScreenshotAs(OutputType.BASE64);
+
+// Element screenshot (Selenium 4)
+WebElement logo = driver.findElement(By.id("logo"));
+File elementShot = logo.getScreenshotAs(OutputType.FILE);`,
+        codeTitle: 'Screenshot Methods',
       },
     ],
   },
@@ -468,72 +466,67 @@ driver.manage().deleteAllCookies();`,
     slides: [
       {
         title: 'Basic Locator Strategies',
-        content: ['Selenium provides multiple ways to locate elements on a web page:'],
-        codeExplanation: 'Locator strategies from most to least reliable: By.id() is fastest and most unique. By.name() works well for form fields. By.className() matches CSS class. By.tagName() finds all elements of a type. By.linkText() matches exact anchor text. By.partialLinkText() matches partial text in links.',
-        code: `// ID - Most reliable
-driver.findElement(By.id("username"));
+        codeExplanation: 'Selenium provides 8 locator strategies. By.id() is fastest and most reliable. By.name() works for form fields. By.className() matches CSS class. By.tagName() finds by HTML tag. By.linkText() matches exact anchor text.',
+        code: `// By ID - Most preferred
+driver.findElement(By.id("loginBtn"));
 
-// Name attribute
-driver.findElement(By.name("email"));
+// By Name
+driver.findElement(By.name("username"));
 
-// Class name
-driver.findElement(By.className("login-btn"));
+// By Class Name
+driver.findElement(By.className("submit-btn"));
 
-// Tag name
+// By Tag Name
 driver.findElements(By.tagName("input"));
 
-// Link text (exact match)
+// By Link Text (exact match)
 driver.findElement(By.linkText("Sign In"));
 
-// Partial link text
+// By Partial Link Text
 driver.findElement(By.partialLinkText("Sign"));`,
         codeTitle: 'Basic Locators',
       },
       {
         title: 'CSS Selectors',
-        content: ['CSS selectors offer powerful and fast element selection:'],
-        codeExplanation: 'CSS selector syntax: # prefix selects by ID. . prefix selects by class. [attribute="value"] matches attributes. > selects direct children. Space selects any descendant. :nth-child(n) selects by position. CSS selectors are faster than XPath and preferred when possible.',
-        code: `// By ID
+        codeExplanation: 'CSS selectors are fast and readable. # prefix selects by ID. . prefix selects by class. [attr="value"] matches attributes. ^= starts-with, *= contains, $= ends-with. > for direct child, space for descendant.',
+        code: `// By ID and class
 driver.findElement(By.cssSelector("#username"));
-
-// By class
-driver.findElement(By.cssSelector(".login-button"));
+driver.findElement(By.cssSelector(".login-btn"));
 
 // By attribute
-driver.findElement(By.cssSelector("input[type='email']"));
+driver.findElement(By.cssSelector("[type='email']"));
 driver.findElement(By.cssSelector("[data-testid='submit']"));
 
-// Child elements
-driver.findElement(By.cssSelector("form > input"));
-driver.findElement(By.cssSelector("div.container input"));
+// Partial attribute matching
+driver.findElement(By.cssSelector("[id^='user_']"));  // starts-with
+driver.findElement(By.cssSelector("[class*='active']"));  // contains
 
-// Nth-child
-driver.findElement(By.cssSelector("ul li:nth-child(2)"));`,
+// Child and descendant
+driver.findElement(By.cssSelector("form > input"));
+driver.findElement(By.cssSelector("div.container input"));`,
         codeTitle: 'CSS Selector Examples',
       },
       {
         title: 'XPath Locators',
-        content: ['XPath provides the most flexible element location capabilities:'],
-        codeExplanation: 'XPath types: Absolute XPath starts from root (avoid - fragile). Relative XPath starts with // (preferred). @attribute accesses attributes. text() matches element text content. contains() for partial matching. starts-with() for prefix matching. XPath is powerful but slower than CSS.',
-        code: `// Absolute XPath (avoid)
-driver.findElement(By.xpath("/html/body/div/form/input"));
-
-// Relative XPath (preferred)
+        codeExplanation: 'XPath is most flexible but slower. // starts relative path. @ accesses attributes. text() matches element text. contains() for partial matching. starts-with() for prefix matching.',
+        code: `// Relative XPath (preferred)
 driver.findElement(By.xpath("//input[@id='username']"));
 
-// Text-based
+// Text-based selection
 driver.findElement(By.xpath("//button[text()='Login']"));
 driver.findElement(By.xpath("//a[contains(text(),'Sign')]"));
 
-// Partial attribute match
+// Partial attribute matching
 driver.findElement(By.xpath("//input[starts-with(@id,'user')]"));
-driver.findElement(By.xpath("//div[contains(@class,'header')]"));`,
+driver.findElement(By.xpath("//div[contains(@class,'active')]"));
+
+// Multiple conditions
+driver.findElement(By.xpath("//input[@type='text' and @name='email']"));`,
         codeTitle: 'XPath Examples',
       },
       {
         title: 'XPath Axes',
-        content: ['XPath axes allow navigation relative to the current element:'],
-        codeExplanation: 'XPath axes explained: parent:: moves to parent element. following-sibling:: finds next siblings at same level. preceding-sibling:: finds previous siblings. ancestor:: finds any parent in hierarchy. // descendant finds any child at any level. Axes are essential when direct locators are unavailable.',
+        codeExplanation: 'XPath axes navigate DOM relationships. parent:: goes up one level. ancestor:: finds any parent. following-sibling:: finds next siblings. preceding-sibling:: finds previous siblings. descendant:: finds any child.',
         code: `// Parent element
 driver.findElement(By.xpath("//input[@id='email']/parent::div"));
 
@@ -541,14 +534,40 @@ driver.findElement(By.xpath("//input[@id='email']/parent::div"));
 driver.findElement(By.xpath("//label[text()='Email']/following-sibling::input"));
 
 // Preceding sibling
-driver.findElement(By.xpath("//input[@id='pass']/preceding-sibling::label"));
+driver.findElement(By.xpath("//input[@id='password']/preceding-sibling::label"));
 
 // Ancestor
 driver.findElement(By.xpath("//input[@id='email']/ancestor::form"));
 
-// Descendant
-driver.findElement(By.xpath("//form[@id='login']//input"));`,
+// Find by text in row
+driver.findElement(By.xpath("//tr[td[text()='John']]/td[3]"));`,
         codeTitle: 'XPath Axes Examples',
+      },
+      {
+        title: 'Relative Locators (Selenium 4)',
+        codeExplanation: 'Selenium 4 introduced Friendly Locators based on visual position. above() finds element above. below() finds element below. toLeftOf() and toRightOf() for horizontal. near() finds within 50px.',
+        code: `import static org.openqa.selenium.support.locators.RelativeLocator.with;
+
+// Find element below another
+WebElement password = driver.findElement(
+    with(By.tagName("input")).below(emailField)
+);
+
+// Find element to the right
+WebElement submitBtn = driver.findElement(
+    with(By.tagName("button")).toRightOf(cancelBtn)
+);
+
+// Find element near another
+WebElement errorMsg = driver.findElement(
+    with(By.className("error")).near(emailField)
+);
+
+// Chaining relative locators
+WebElement field = driver.findElement(
+    with(By.tagName("input")).below(label).above(button)
+);`,
+        codeTitle: 'Relative Locators',
       },
     ],
   },
@@ -558,60 +577,62 @@ driver.findElement(By.xpath("//form[@id='login']//input"));`,
     slides: [
       {
         title: 'Locator Priority Order',
-        content: ['Use locators in this priority order for maximum stability:'],
-        bulletPoints: [
-          '1. ID - Fastest and most reliable',
-          '2. name - Usually unique within forms',
-          '3. CSS Selector - Fast, flexible, readable',
-          '4. XPath - Most powerful, use when others fail',
-          '5. linkText - For anchor elements only',
-          '6. className - Can match multiple elements',
-        ],
+        content: ['Use locators in this priority for maximum stability:'],
+        table: {
+          headers: ['Priority', 'Locator', 'When to Use'],
+          rows: [
+            ['1', 'ID', 'Always prefer if unique and stable'],
+            ['2', 'Name', 'Good for form inputs'],
+            ['3', 'data-testid', 'Most stable (request from developers)'],
+            ['4', 'CSS Selector', 'Fast, flexible, readable'],
+            ['5', 'XPath', 'Text matching, DOM traversal'],
+            ['6', 'Link Text', 'Anchor elements only'],
+          ],
+        },
       },
       {
-        title: 'Locator Comparison',
+        title: 'CSS vs XPath Comparison',
         table: {
-          headers: ['Locator', 'Use When', 'Avoid When'],
+          headers: ['Criteria', 'CSS Selector', 'XPath'],
           rows: [
-            ['ID', 'Unique, stable ID exists', 'ID is auto-generated'],
-            ['CSS', 'Need complex selectors', 'Text-based selection needed'],
-            ['XPath', 'Need text/axes traversal', 'Simple selection possible'],
-            ['Name', 'Form elements', 'Non-form elements'],
+            ['Performance', 'Faster', 'Slower'],
+            ['Readability', 'More readable', 'Can be complex'],
+            ['Text Matching', 'Not supported', 'Supported'],
+            ['Parent Traversal', 'Not supported', 'Supported'],
+            ['Browser Support', 'Consistent', 'Varies slightly'],
           ],
         },
       },
       {
         title: 'Handling Dynamic Elements',
-        content: ['Strategies for locating elements with changing attributes:'],
-        codeExplanation: 'Dynamic element strategies: [id^="user_"] uses CSS "starts-with" for dynamic ID prefixes. [class*="active"] uses CSS "contains" for partial class matching. data-testid attributes provide stable locators (request from developers). XPath axes like following-sibling find elements based on relationships rather than attributes.',
+        codeExplanation: 'Dynamic elements have changing IDs/classes. Use partial matching with ^= (starts-with), *= (contains). data-testid attributes are most stable. Ask developers to add test-specific attributes.',
         code: `// Dynamic ID: user_12345 -> user_67890
-// Use starts-with or contains
 driver.findElement(By.cssSelector("[id^='user_']"));
 driver.findElement(By.xpath("//div[starts-with(@id,'user_')]"));
 
-// Dynamic class with multiple values
-driver.findElement(By.cssSelector("[class*='active']"));
+// Dynamic class with hash
+driver.findElement(By.cssSelector("[class*='button'][class*='primary']"));
 
-// Use data-testid (request from developers)
+// Use data-testid (most stable)
 driver.findElement(By.cssSelector("[data-testid='login-button']"));
 
-// Relative positioning
+// Find by relationship
 driver.findElement(By.xpath(
     "//label[text()='Email']/following-sibling::input"
 ));`,
         codeTitle: 'Dynamic Element Strategies',
       },
       {
-        title: 'Corporate Best Practices',
-        content: ['Industry-standard practices for locator management in enterprise projects:'],
+        title: 'Best Practices Summary',
         bulletPoints: [
-          'Request data-testid attributes from development team',
-          'Maintain a locator strategy document',
-          'Use Page Object Model for locator organization',
-          'Implement retry logic for flaky locators',
-          'Conduct regular locator audits',
-          'Avoid absolute XPath - breaks with UI changes',
-          'Prefer CSS over XPath for performance',
+          '✅ Prefer ID > Name > CSS > XPath',
+          '✅ Use data-testid attributes (request from developers)',
+          '✅ Avoid absolute XPath - breaks with UI changes',
+          '✅ Store locators as constants in Page Objects',
+          '✅ Use explicit waits before finding elements',
+          '❌ Avoid dynamic/auto-generated IDs',
+          '❌ Avoid index-only locators like //input[3]',
+          '❌ Avoid fragile class names like css-1a2b3c',
         ],
       },
     ],
@@ -622,32 +643,19 @@ driver.findElement(By.xpath(
     slides: [
       {
         title: 'Why Waits Are Essential',
-        content: ['Modern web apps load content dynamically. Waits synchronize test execution with page state.'],
+        content: ['Modern web apps load content dynamically via AJAX and JavaScript.'],
         bulletPoints: [
+          'Elements may not be immediately available',
           'AJAX calls load data asynchronously',
           'Animations and transitions take time',
-          'Network latency varies',
-          'Without waits: StaleElementException, NoSuchElementException',
+          'Without waits: NoSuchElementException, StaleElementException',
+          'Never use Thread.sleep() - it is unreliable!',
         ],
       },
       {
-        title: 'Thread.sleep() - Avoid This!',
-        content: ['Why Thread.sleep() is considered a bad practice in test automation:'],
-        codeExplanation: 'Thread.sleep() is an anti-pattern because: 1) It always waits the full duration even if the element appears immediately. 2) It may still fail if the element takes longer than expected. 3) It slows down test execution significantly. 4) It makes tests unreliable and unprofessional.',
-        code: `// BAD PRACTICE - Fixed wait regardless of condition
-Thread.sleep(5000); // Waits 5 seconds ALWAYS
-
-// Problems:
-// 1. Wastes time if element appears early
-// 2. May still fail if element takes longer
-// 3. Not reliable, not professional`,
-        codeTitle: 'Anti-Pattern',
-      },
-      {
         title: 'Implicit Wait',
-        content: ['A global wait that applies to all element searches:'],
-        codeExplanation: 'Implicit wait explained: Set once, it applies to ALL findElement calls. The driver polls the DOM for the specified duration until the element is found. Limitations: same timeout for all elements, cannot wait for specific conditions like visibility or clickability, can interfere with explicit waits unpredictably.',
-        code: `// Set once, applies to all findElement calls
+        codeExplanation: 'Implicit wait is set once and applies globally to all findElement() calls. Driver polls DOM for specified duration. Returns immediately when element found. Throws exception after timeout.',
+        code: `// Set once, applies to ALL findElement calls
 driver.manage().timeouts()
     .implicitlyWait(Duration.ofSeconds(10));
 
@@ -657,27 +665,26 @@ WebElement element = driver.findElement(By.id("search"));
 // Limitations:
 // - Same timeout for all elements
 // - Cannot wait for specific conditions
-// - Mixes with explicit waits unpredictably`,
+// - Can interfere with explicit waits`,
         codeTitle: 'Implicit Wait',
       },
       {
         title: 'Explicit Wait (Recommended)',
-        content: ['The most flexible and reliable wait strategy:'],
-        codeExplanation: 'Explicit wait is the recommended approach: WebDriverWait with ExpectedConditions waits for specific conditions. visibilityOfElementLocated() waits until element is visible. elementToBeClickable() ensures element can receive clicks. urlContains() waits for navigation. textToBePresentInElementLocated() waits for text content.',
+        codeExplanation: 'Explicit wait is the recommended approach. WebDriverWait with ExpectedConditions waits for specific conditions. visibilityOfElementLocated() waits until visible. elementToBeClickable() ensures clickable. More precise than implicit wait.',
         code: `WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-// Wait for element to be visible
+// Wait for visibility
 WebElement element = wait.until(
     ExpectedConditions.visibilityOfElementLocated(By.id("results"))
 );
 
-// Wait for element to be clickable
+// Wait for clickable
 wait.until(ExpectedConditions.elementToBeClickable(By.id("submit"))).click();
 
-// Wait for URL to contain
+// Wait for URL change
 wait.until(ExpectedConditions.urlContains("/dashboard"));
 
-// Wait for text to be present
+// Wait for text
 wait.until(ExpectedConditions.textToBePresentInElementLocated(
     By.id("status"), "Complete"
 ));`,
@@ -685,8 +692,7 @@ wait.until(ExpectedConditions.textToBePresentInElementLocated(
       },
       {
         title: 'Fluent Wait',
-        content: ['The most configurable wait with custom polling and exception handling:'],
-        codeExplanation: 'Fluent wait provides maximum control: withTimeout() sets total wait duration. pollingEvery() sets check frequency (default 500ms). ignoring() specifies exceptions to suppress during polling. Custom functions allow complex conditions. Use for unstable elements or complex scenarios.',
+        codeExplanation: 'Fluent wait provides maximum control. withTimeout() sets total duration. pollingEvery() sets check frequency. ignoring() suppresses exceptions during polling. Use for unstable elements or complex conditions.',
         code: `Wait<WebDriver> fluentWait = new FluentWait<>(driver)
     .withTimeout(Duration.ofSeconds(30))
     .pollingEvery(Duration.ofMillis(500))
@@ -694,10 +700,25 @@ wait.until(ExpectedConditions.textToBePresentInElementLocated(
     .ignoring(StaleElementReferenceException.class);
 
 WebElement element = fluentWait.until(driver -> {
-    WebElement el = driver.findElement(By.id("dynamic-content"));
+    WebElement el = driver.findElement(By.id("dynamic"));
     return el.isDisplayed() ? el : null;
 });`,
-        codeTitle: 'Fluent Wait - Maximum Control',
+        codeTitle: 'Fluent Wait',
+      },
+      {
+        title: 'Common ExpectedConditions',
+        table: {
+          headers: ['Condition', 'Use Case'],
+          rows: [
+            ['visibilityOfElementLocated', 'Element is visible on page'],
+            ['elementToBeClickable', 'Element is visible and enabled'],
+            ['invisibilityOfElementLocated', 'Loading spinner disappears'],
+            ['presenceOfElementLocated', 'Element exists in DOM'],
+            ['urlContains', 'Page navigation completed'],
+            ['alertIsPresent', 'JavaScript alert appeared'],
+            ['frameToBeAvailableAndSwitchToIt', 'iframe is loaded'],
+          ],
+        },
       },
     ],
   },
@@ -707,18 +728,17 @@ WebElement element = fluentWait.until(driver -> {
     slides: [
       {
         title: 'Page Object Model Pattern',
-        content: ['POM separates test logic from page structure for maintainability:'],
-        codeExplanation: 'Page Object Model explained: The class encapsulates all locators and actions for one page. Private locators are stored as By objects for reusability. Constructor takes WebDriver and initializes WebDriverWait. Public methods represent user actions (login, search). This separation means locator changes only require updates in one place.',
-        code: `public class LoginPage {
+        codeExplanation: 'POM separates test logic from page structure. Private locators stored as By objects. Public methods represent user actions. Constructor initializes driver and wait. Changes to UI only require updates in one place.',
+        code: `public class CourseraLoginPage {
     private WebDriver driver;
     private WebDriverWait wait;
     
     // Locators
     private By emailField = By.id("email");
     private By passwordField = By.id("password");
-    private By loginButton = By.cssSelector("[data-testid='login']");
+    private By loginButton = By.xpath("//button[text()='Login']");
     
-    public LoginPage(WebDriver driver) {
+    public CourseraLoginPage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
@@ -730,61 +750,89 @@ WebElement element = fluentWait.until(driver -> {
         driver.findElement(loginButton).click();
     }
 }`,
-        codeTitle: 'LoginPage.java',
+        codeTitle: 'CourseraLoginPage.java',
       },
       {
-        title: 'Coursera Login Test',
-        content: ['A complete test class using Page Object Model:'],
-        codeExplanation: 'Test class structure: Extends BaseTest to inherit setup/teardown. @BeforeMethod initializes page objects before each test. @Test method contains the actual test logic. Test reads like user actions: navigate, enter credentials, click, verify. Assert.assertTrue validates the expected outcome.',
+        title: 'Complete Login Test',
+        codeExplanation: 'Test extends BaseTest for setup/teardown. @BeforeMethod initializes page objects. @Test contains business logic. Assert validates expected outcome. Test reads like user story.',
         code: `public class CourseraLoginTest extends BaseTest {
     private CourseraLoginPage loginPage;
     
     @BeforeMethod
     public void initPages() {
+        driver.get("https://www.coursera.org/login");
         loginPage = new CourseraLoginPage(driver);
     }
     
     @Test
-    public void testSuccessfulLogin() {
-        driver.get("https://www.coursera.org/login");
-        
-        loginPage.enterEmail("testuser@example.com");
-        loginPage.enterPassword("SecurePass123");
-        loginPage.clickLogin();
-        
-        Assert.assertTrue(loginPage.isLoggedIn(),
-            "User should be logged in");
+    public void testValidLogin() {
+        loginPage.login("user@email.com", "Password123");
+        Assert.assertTrue(driver.getCurrentUrl().contains("/browse"),
+            "Should redirect to home after login");
+    }
+    
+    @Test
+    public void testInvalidLogin() {
+        loginPage.login("invalid@email.com", "wrongpass");
+        Assert.assertTrue(loginPage.isErrorDisplayed(),
+            "Should show error message");
     }
 }`,
         codeTitle: 'CourseraLoginTest.java',
       },
       {
         title: 'BookMyShow Booking Flow',
-        content: ['End-to-end test demonstrating multi-page workflow:'],
-        codeExplanation: 'E2E test flow: Multiple page objects represent different screens (HomePage, MoviePage, SeatSelectionPage). Test simulates complete user journey: select city, search movie, choose theatre and time, select seats. Each page object handles its own elements. Final assertion verifies the expected end state.',
-        code: `public class BookMyShowTest extends BaseTest {
-    @Test
-    public void testMovieBookingFlow() {
-        BookMyShowHomePage homePage = new BookMyShowHomePage(driver);
-        MoviePage moviePage = new MoviePage(driver);
-        SeatSelectionPage seatPage = new SeatSelectionPage(driver);
-        
-        driver.get("https://www.bookmyshow.com");
-        
-        homePage.selectCity("Mumbai");
-        homePage.searchMovie("Inception");
-        homePage.selectFirstResult();
-        
-        moviePage.selectTheatre("PVR: Phoenix");
-        moviePage.selectShowTime("7:00 PM");
-        
-        seatPage.selectSeats(2, "Premium");
-        seatPage.proceedToPayment();
-        
-        Assert.assertTrue(seatPage.isPaymentPageDisplayed());
-    }
+        codeExplanation: 'E2E test uses multiple page objects. Each page object handles one screen. Test simulates complete user journey. Assertions verify each step.',
+        code: `@Test
+public void testMovieBooking() {
+    BookMyShowHomePage homePage = new BookMyShowHomePage(driver);
+    SeatSelectionPage seatPage = new SeatSelectionPage(driver);
+    
+    driver.get("https://www.bookmyshow.com");
+    
+    // Select city and movie
+    homePage.selectCity("Mumbai");
+    homePage.searchMovie("Jawan");
+    
+    // Select theater and time
+    homePage.selectTheater("PVR Cinemas");
+    homePage.selectShowtime("7:00 PM");
+    
+    // Select seats
+    seatPage.selectSeats("A1", "A2");
+    Assert.assertEquals(seatPage.getSelectedSeatCount(), 2);
+    
+    // Proceed to payment
+    seatPage.proceedToPayment();
+    Assert.assertTrue(paymentPage.isDisplayed());
 }`,
         codeTitle: 'BookMyShowTest.java',
+      },
+      {
+        title: 'Handling Dynamic Elements Real Example',
+        codeExplanation: 'Real-world scenario: BookMyShow seat IDs are dynamic with session prefix. Use partial matching or data attributes. Wait for elements to be clickable before interaction.',
+        code: `public class SeatSelectionPage {
+    
+    public void selectSeat(String seatNumber) {
+        // Seat ID format: seat_abc123_A1 (abc123 is session ID)
+        WebElement seat = wait.until(ExpectedConditions.elementToBeClickable(
+            By.cssSelector("[data-seat='" + seatNumber + "']")
+        ));
+        
+        if (seat.getAttribute("class").contains("booked")) {
+            throw new RuntimeException("Seat already booked");
+        }
+        
+        seat.click();
+        
+        // Verify selection
+        wait.until(ExpectedConditions.attributeContains(
+            By.cssSelector("[data-seat='" + seatNumber + "']"),
+            "class", "selected"
+        ));
+    }
+}`,
+        codeTitle: 'Dynamic Seat Selection',
       },
     ],
   },
@@ -793,90 +841,147 @@ WebElement element = fluentWait.until(driver -> {
     sectionNumber: 8,
     slides: [
       {
-        title: 'TestNG Annotations',
-        content: ['TestNG provides annotations to control test execution flow:'],
+        title: 'TestNG Annotation Lifecycle',
+        content: ['TestNG annotations control test execution order:'],
         bulletPoints: [
-          '@BeforeSuite - Runs once before all tests in suite',
-          '@BeforeTest - Runs before each <test> tag in testng.xml',
-          '@BeforeClass - Runs once before first method in class',
-          '@BeforeMethod - Runs before each @Test method',
-          '@Test - Marks a method as test case',
-          '@AfterMethod - Runs after each @Test method',
-          '@AfterClass - Runs once after all methods in class',
-          '@AfterTest - Runs after each <test> tag',
-          '@AfterSuite - Runs once after all tests in suite',
+          '@BeforeSuite → @BeforeTest → @BeforeClass → @BeforeMethod',
+          '@Test (your test method runs here)',
+          '@AfterMethod → @AfterClass → @AfterTest → @AfterSuite',
+          'Suite level runs once per suite',
+          'Method level runs for each @Test',
         ],
       },
       {
-        title: 'Test Annotations Example',
-        content: ['Demonstrating TestNG lifecycle and test dependencies:'],
-        codeExplanation: 'TestNG lifecycle: @BeforeClass runs once before any tests in the class (setup resources). @BeforeMethod runs before EACH test method (reset state). @Test marks test methods - priority controls execution order, dependsOnMethods creates test dependencies. @AfterMethod runs after each test (cleanup). The execution order ensures proper setup and teardown.',
-        code: `public class TestNGLifecycle {
+        title: 'TestNG Annotations Example',
+        codeExplanation: '@BeforeClass runs once before any test in class. @BeforeMethod runs before EACH test. @Test with priority controls order. dependsOnMethods creates dependencies. groups categorize tests.',
+        code: `public class TestNGExample {
     @BeforeClass
     public void setupClass() {
-        System.out.println("Setup - runs once");
+        System.out.println("Runs once before all tests");
     }
     
     @BeforeMethod
     public void setupTest() {
-        System.out.println("Before each test");
+        System.out.println("Runs before each @Test");
     }
     
-    @Test(priority = 1)
+    @Test(priority = 1, groups = {"smoke"})
     public void testLogin() {
         System.out.println("Test 1: Login");
     }
     
     @Test(priority = 2, dependsOnMethods = "testLogin")
     public void testDashboard() {
-        System.out.println("Test 2: Dashboard");
+        System.out.println("Test 2: Runs after testLogin");
     }
     
     @AfterMethod
     public void teardownTest() {
-        System.out.println("After each test");
+        System.out.println("Runs after each @Test");
     }
 }`,
         codeTitle: 'TestNG Lifecycle',
       },
       {
-        title: 'Assertions',
-        content: ['Two types of assertions for different testing needs:'],
-        codeExplanation: 'Hard assertions (Assert class): Stop test immediately on failure - use for critical validations. Soft assertions (SoftAssert class): Continue execution after failures - collect all failures and report at end with assertAll(). Use soft assertions when you want to verify multiple conditions in one test.',
-        code: `// Hard Assertions - Stop on failure
-Assert.assertEquals(actual, expected, "Values should match");
-Assert.assertTrue(condition, "Condition should be true");
-Assert.assertFalse(condition, "Condition should be false");
-Assert.assertNotNull(object, "Object should not be null");
+        title: 'DataProvider for Data-Driven Testing',
+        codeExplanation: '@DataProvider supplies test data as Object[][]. Each array is one test iteration. @Test(dataProvider="name") links to provider. Can be in same class or external class.',
+        code: `@DataProvider(name = "loginData")
+public Object[][] getLoginData() {
+    return new Object[][] {
+        {"valid@email.com", "pass123", true},
+        {"invalid@email.com", "wrong", false},
+        {"", "password", false}
+    };
+}
 
-// Soft Assertions - Continue after failure
-SoftAssert soft = new SoftAssert();
-soft.assertEquals(title, "Dashboard");
-soft.assertTrue(isLoggedIn);
-soft.assertAll(); // Reports all failures at end`,
-        codeTitle: 'Assertions',
+@Test(dataProvider = "loginData")
+public void testLogin(String email, String password, boolean shouldPass) {
+    loginPage.login(email, password);
+    
+    if (shouldPass) {
+        Assert.assertTrue(homePage.isDisplayed());
+    } else {
+        Assert.assertTrue(loginPage.isErrorDisplayed());
+    }
+}`,
+        codeTitle: 'DataProvider Example',
+      },
+      {
+        title: 'TestNG Listeners',
+        codeExplanation: 'ITestListener intercepts test events. onTestFailure captures screenshot. onTestSuccess logs pass. onFinish generates summary. IRetryAnalyzer retries failed tests.',
+        code: `public class TestListener implements ITestListener {
+    
+    @Override
+    public void onTestStart(ITestResult result) {
+        System.out.println("Starting: " + result.getName());
+    }
+    
+    @Override
+    public void onTestSuccess(ITestResult result) {
+        System.out.println("PASSED: " + result.getName());
+    }
+    
+    @Override
+    public void onTestFailure(ITestResult result) {
+        System.out.println("FAILED: " + result.getName());
+        // Capture screenshot
+        WebDriver driver = ((BaseTest) result.getInstance()).getDriver();
+        captureScreenshot(driver, result.getName());
+    }
+    
+    @Override
+    public void onFinish(ITestContext context) {
+        System.out.println("Passed: " + context.getPassedTests().size());
+        System.out.println("Failed: " + context.getFailedTests().size());
+    }
+}`,
+        codeTitle: 'TestListener.java',
+      },
+      {
+        title: 'Retry Failed Tests',
+        codeExplanation: 'IRetryAnalyzer retries flaky tests. retry() returns true to retry, false to stop. MAX_RETRY limits attempts. Apply to all tests using IAnnotationTransformer.',
+        code: `public class RetryAnalyzer implements IRetryAnalyzer {
+    private int retryCount = 0;
+    private static final int MAX_RETRY = 2;
+    
+    @Override
+    public boolean retry(ITestResult result) {
+        if (retryCount < MAX_RETRY) {
+            retryCount++;
+            System.out.println("Retrying: " + result.getName() + 
+                             " Attempt: " + retryCount);
+            return true;  // Retry
+        }
+        return false;  // Don't retry
+    }
+}
+
+// Usage
+@Test(retryAnalyzer = RetryAnalyzer.class)
+public void testFlakyOperation() {
+    // This test retries up to 2 times on failure
+}`,
+        codeTitle: 'RetryAnalyzer.java',
       },
       {
         title: 'testng.xml Configuration',
-        content: ['Configure test suites, parallel execution, and test grouping:'],
-        codeExplanation: 'testng.xml structure: <suite> is the root element - parallel="tests" runs tests in parallel, thread-count sets concurrency. <test> groups related classes. <groups> filters tests by @Test(groups="smoke"). <classes> lists test classes to run. This XML enables flexible test organization and CI/CD integration.',
-        code: `<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-<suite name="Selenium Test Suite" parallel="tests" thread-count="3">
+        codeExplanation: 'testng.xml controls test execution. parallel="methods" runs tests in parallel. thread-count sets concurrency. <listeners> registers custom listeners. <groups> filters tests.',
+        code: `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Regression Suite" parallel="methods" thread-count="3">
+    
+    <listeners>
+        <listener class-name="listeners.TestListener"/>
+        <listener class-name="listeners.RetryListener"/>
+    </listeners>
+    
     <test name="Smoke Tests">
         <groups>
-            <run>
-                <include name="smoke"/>
-            </run>
+            <run><include name="smoke"/></run>
         </groups>
         <classes>
             <class name="tests.LoginTest"/>
-            <class name="tests.HomePageTest"/>
-        </classes>
-    </test>
-    
-    <test name="Regression Tests">
-        <classes>
-            <class name="tests.BookingTest"/>
+            <class name="tests.SearchTest"/>
         </classes>
     </test>
 </suite>`,
@@ -889,102 +994,105 @@ soft.assertAll(); // Reports all failures at end`,
     sectionNumber: 9,
     slides: [
       {
-        title: 'Handling Alerts',
-        content: ['JavaScript alerts require switching context to interact:'],
-        codeExplanation: 'Alert handling process: 1) Use ExpectedConditions.alertIsPresent() to wait for and detect alerts. 2) driver.switchTo().alert() returns the Alert object. 3) getText() retrieves the alert message. 4) accept() clicks OK/Yes. 5) dismiss() clicks Cancel/No. 6) sendKeys() types into prompt dialogs.',
-        code: `// Wait for and switch to alert
+        title: 'Handling JavaScript Alerts',
+        codeExplanation: 'Alerts require context switch. ExpectedConditions.alertIsPresent() waits for alert. driver.switchTo().alert() returns Alert object. accept() clicks OK. dismiss() clicks Cancel. sendKeys() types in prompt.',
+        code: `// Wait for alert
 WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 Alert alert = wait.until(ExpectedConditions.alertIsPresent());
 
 // Get alert text
 String alertText = alert.getText();
 
-// Accept alert (OK button)
+// Simple alert - click OK
 alert.accept();
 
-// Dismiss alert (Cancel button)
+// Confirm dialog - click Cancel
 alert.dismiss();
 
-// Send text to prompt
+// Prompt - enter text and accept
 alert.sendKeys("User input");
 alert.accept();`,
         codeTitle: 'Alert Handling',
       },
       {
-        title: 'Handling Frames',
-        content: ['Frames (iframes) create separate DOM contexts:'],
-        codeExplanation: 'Frame switching: Elements inside frames are invisible until you switch context. Switch by index (0-based), name/ID attribute, or WebElement reference. After switching, all findElement calls operate within that frame. defaultContent() returns to the main page. parentFrame() moves up one level in nested frames.',
-        code: `// Switch by index
+        title: 'Handling Frames/iFrames',
+        codeExplanation: 'Frames isolate content. Must switch context to interact. switchTo().frame() by index, name, or WebElement. defaultContent() returns to main page. parentFrame() goes up one level.',
+        code: `// Switch by name or ID
+driver.switchTo().frame("frameName");
+
+// Switch by index
 driver.switchTo().frame(0);
 
-// Switch by name or ID
-driver.switchTo().frame("iframe-name");
-
 // Switch by WebElement
-WebElement frameElement = driver.findElement(By.cssSelector("iframe.content"));
-driver.switchTo().frame(frameElement);
+WebElement iframe = driver.findElement(By.tagName("iframe"));
+driver.switchTo().frame(iframe);
 
-// Interact with elements inside frame
-driver.findElement(By.id("frame-button")).click();
+// Interact inside frame
+driver.findElement(By.id("frameElement")).click();
 
-// Switch back to main document
+// Return to main content
 driver.switchTo().defaultContent();
 
-// Switch to parent frame
+// Nested frames - go up one level
 driver.switchTo().parentFrame();`,
         codeTitle: 'Frame Handling',
       },
       {
         title: 'Handling Multiple Windows',
-        content: ['Managing multiple browser windows and tabs:'],
-        codeExplanation: 'Window handling: getWindowHandle() stores current window ID. After clicking a link that opens new window, getWindowHandles() returns all open window IDs. Loop through and switch to the new window using switchTo().window(). Perform actions, then close() the new window and switch back to original.',
-        code: `// Store original window handle
-String originalWindow = driver.getWindowHandle();
+        codeExplanation: 'Each window has unique handle. getWindowHandle() gets current. getWindowHandles() gets all. switchTo().window(handle) switches context. close() closes current window only.',
+        code: `// Store main window
+String mainWindow = driver.getWindowHandle();
 
 // Click link that opens new window
-driver.findElement(By.linkText("Open New Tab")).click();
+driver.findElement(By.linkText("Open New")).click();
 
-// Get all window handles
-Set<String> allWindows = driver.getWindowHandles();
+// Wait for new window
+wait.until(ExpectedConditions.numberOfWindowsToBe(2));
 
 // Switch to new window
-for (String window : allWindows) {
-    if (!window.equals(originalWindow)) {
+Set<String> windows = driver.getWindowHandles();
+for (String window : windows) {
+    if (!window.equals(mainWindow)) {
         driver.switchTo().window(window);
         break;
     }
 }
 
-// Perform actions in new window
-System.out.println("New window title: " + driver.getTitle());
-
-// Close new window and switch back
+// Close new window and return
 driver.close();
-driver.switchTo().window(originalWindow);`,
+driver.switchTo().window(mainWindow);`,
         codeTitle: 'Window Handling',
       },
       {
-        title: 'Screenshot on Failure',
-        content: ['Capture screenshots for debugging failed tests:'],
-        codeExplanation: 'Screenshot utility: Cast driver to TakesScreenshot interface. getScreenshotAs(OutputType.FILE) captures the visible viewport. Create a timestamped filename for uniqueness. FileUtils.copyFile() saves to disk. Call this from @AfterMethod when test fails, or integrate with TestNG listeners for automatic capture.',
-        code: `public class ScreenshotUtil {
-    public static void captureScreenshot(WebDriver driver, String testName) {
-        try {
-            TakesScreenshot ts = (TakesScreenshot) driver;
-            File source = ts.getScreenshotAs(OutputType.FILE);
-            
-            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
-                .format(new Date());
-            String path = "screenshots/" + testName + "_" + timestamp + ".png";
-            
-            FileUtils.copyFile(source, new File(path));
-            System.out.println("Screenshot saved: " + path);
-        } catch (IOException e) {
-            System.out.println("Failed to capture screenshot");
-        }
-    }
-}`,
-        codeTitle: 'ScreenshotUtil.java',
+        title: 'Common Selenium Exceptions',
+        table: {
+          headers: ['Exception', 'Cause', 'Solution'],
+          rows: [
+            ['NoSuchElementException', 'Element not found', 'Check locator, use wait'],
+            ['StaleElementReferenceException', 'DOM changed', 'Re-find element'],
+            ['TimeoutException', 'Wait exceeded', 'Increase timeout, check condition'],
+            ['ElementNotInteractableException', 'Element hidden/disabled', 'Wait for clickable'],
+            ['NoAlertPresentException', 'No alert exists', 'Wait for alert'],
+          ],
+        },
+      },
+      {
+        title: 'Handling File Upload',
+        codeExplanation: 'File upload uses sendKeys() on input[type="file"]. Send absolute file path. Works for standard upload inputs. For custom uploaders, may need JavaScript or AutoIT.',
+        code: `// Standard file upload
+WebElement fileInput = driver.findElement(By.id("fileUpload"));
+String filePath = System.getProperty("user.dir") + "/testdata/document.pdf";
+fileInput.sendKeys(filePath);
+
+// Click upload button
+driver.findElement(By.id("uploadBtn")).click();
+
+// Verify upload success
+WebElement successMsg = wait.until(
+    ExpectedConditions.visibilityOfElementLocated(By.className("success"))
+);
+Assert.assertTrue(successMsg.getText().contains("uploaded"));`,
+        codeTitle: 'File Upload',
       },
     ],
   },
@@ -994,240 +1102,530 @@ driver.switchTo().window(originalWindow);`,
     slides: [
       {
         title: 'Page Object Model Benefits',
-        content: ['Why POM is the industry standard for test automation frameworks:'],
+        content: ['POM is the industry-standard design pattern for Selenium automation:'],
         bulletPoints: [
-          'Separation of concerns - Test logic vs Page structure',
+          'Separation of Concerns - Test logic separate from page structure',
           'Reusability - Page methods used across multiple tests',
-          'Maintainability - Locator changes in one place',
+          'Maintainability - Locator changes in one place only',
           'Readability - Tests read like user actions',
           'Scalability - Easy to add new pages and tests',
         ],
       },
       {
+        title: 'BasePage Pattern',
+        codeExplanation: 'Abstract BasePage provides common functionality. Protected members accessible to child pages. Common waits and actions centralized. All page objects extend BasePage.',
+        code: `public abstract class BasePage {
+    protected WebDriver driver;
+    protected WebDriverWait wait;
+    
+    public BasePage(WebDriver driver) {
+        this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+    
+    protected WebElement waitForVisible(By locator) {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    }
+    
+    protected void waitAndClick(By locator) {
+        wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
+    }
+    
+    protected void waitAndType(By locator, String text) {
+        WebElement el = waitForVisible(locator);
+        el.clear();
+        el.sendKeys(text);
+    }
+    
+    public abstract boolean isPageLoaded();
+}`,
+        codeTitle: 'BasePage.java',
+      },
+      {
         title: 'Page Factory Pattern',
-        content: ['An enhanced approach to Page Object Model using annotations:'],
-        codeExplanation: 'Page Factory benefits: @FindBy annotations declare locators directly on WebElement fields - cleaner than By objects. PageFactory.initElements() initializes all annotated elements using lazy loading. Elements are found only when first accessed. This reduces boilerplate code and improves readability.',
-        code: `public class LoginPage {
+        codeExplanation: '@FindBy annotation defines locators. PageFactory.initElements() initializes elements. @CacheLookup caches static elements. Elements are lazily initialized on first use.',
+        code: `public class CourseraHomePage {
     private WebDriver driver;
     
-    @FindBy(id = "email")
-    private WebElement emailField;
+    @FindBy(id = "searchInput")
+    private WebElement searchBox;
     
-    @FindBy(id = "password")
-    private WebElement passwordField;
+    @FindBy(css = ".course-card")
+    private List<WebElement> courseCards;
     
-    @FindBy(css = "[data-testid='login-btn']")
-    private WebElement loginButton;
+    @FindBy(linkText = "Sign In")
+    @CacheLookup  // Cache for static elements
+    private WebElement signInLink;
     
-    public LoginPage(WebDriver driver) {
+    public CourseraHomePage(WebDriver driver) {
         this.driver = driver;
         PageFactory.initElements(driver, this);
     }
     
-    public void login(String email, String password) {
-        emailField.sendKeys(email);
-        passwordField.sendKeys(password);
-        loginButton.click();
+    public void searchCourse(String name) {
+        searchBox.clear();
+        searchBox.sendKeys(name);
+        searchBox.sendKeys(Keys.ENTER);
     }
 }`,
-        codeTitle: 'Page Factory Example',
+        codeTitle: 'Page Factory',
       },
       {
-        title: 'Logging with Log4j',
-        content: ['Implement comprehensive logging for debugging and reporting:'],
-        codeExplanation: 'Log4j implementation: LogManager.getLogger() creates a logger for each class. logger.info() records important events. logger.debug() records detailed info for troubleshooting. logger.error() records failures. ITestResult in @AfterMethod provides test outcome. Combine with screenshot capture for complete failure documentation.',
-        code: `public class BaseTest {
-    protected static final Logger logger = LogManager.getLogger(BaseTest.class);
-    protected WebDriver driver;
+        title: 'Logging with Log4j2',
+        codeExplanation: 'Log4j2 provides structured logging. Logger per class with getLogger(). log.info() for key actions. log.debug() for details. log.error() for failures. Logs help debug failures.',
+        code: `public class BookingTest extends BaseTest {
+    private static final Logger log = LogManager.getLogger(BookingTest.class);
     
-    @BeforeMethod
-    public void setUp() {
-        logger.info("Starting test setup");
-        driver = DriverManager.getDriver();
-        logger.debug("Browser launched successfully");
-    }
-    
-    @AfterMethod
-    public void tearDown(ITestResult result) {
-        if (result.getStatus() == ITestResult.FAILURE) {
-            logger.error("Test failed: " + result.getName());
-            ScreenshotUtil.capture(driver, result.getName());
+    @Test
+    public void testMovieBooking() {
+        log.info("Starting movie booking test");
+        
+        try {
+            log.debug("Navigating to BookMyShow");
+            driver.get("https://www.bookmyshow.com");
+            
+            log.info("Selecting city: Mumbai");
+            homePage.selectCity("Mumbai");
+            
+            log.debug("Searching for movie: Jawan");
+            homePage.searchMovie("Jawan");
+            
+            log.info("Test completed successfully");
+        } catch (Exception e) {
+            log.error("Test failed: " + e.getMessage());
+            throw e;
         }
-        driver.quit();
-        logger.info("Browser closed");
     }
 }`,
-        codeTitle: 'Logging Implementation',
+        codeTitle: 'Logging Example',
       },
       {
-        title: 'Folder Structure',
-        content: ['Recommended project structure for enterprise automation frameworks:'],
-        bulletPoints: [
-          'src/main/java/pages - Page Object classes',
-          'src/main/java/utils - Utility classes (DriverManager, ConfigReader)',
-          'src/main/java/constants - Constants and enums',
-          'src/test/java/tests - Test classes',
-          'src/test/java/base - BaseTest class',
-          'src/test/resources - testng.xml, config.properties, test data',
-          'reports - Extent Reports output',
-          'screenshots - Failure screenshots',
-        ],
+        title: 'Extent Reports Integration',
+        codeExplanation: 'ExtentReports generates HTML reports. ExtentSparkReporter configures output. createTest() for each test. log() records pass/fail/info. attachScreenshot() adds images. flush() writes report.',
+        code: `public class ExtentReportManager {
+    private static ExtentReports extent;
+    private static ExtentTest test;
+    
+    public static void initReport(String suiteName) {
+        ExtentSparkReporter spark = new ExtentSparkReporter("reports/report.html");
+        extent = new ExtentReports();
+        extent.attachReporter(spark);
+    }
+    
+    public static void createTest(String testName) {
+        test = extent.createTest(testName);
+    }
+    
+    public static void logPass(String message) {
+        test.log(Status.PASS, message);
+    }
+    
+    public static void logFail(Throwable t) {
+        test.log(Status.FAIL, t);
+    }
+    
+    public static void flushReport() {
+        extent.flush();
+    }
+}`,
+        codeTitle: 'Extent Reports',
       },
     ],
   },
   'advanced-concepts': {
-    sectionTitle: 'Shadow DOM & Advanced Concepts',
+    sectionTitle: 'Advanced Concepts',
     sectionNumber: 11,
     slides: [
       {
-        title: 'What is Shadow DOM?',
-        content: ['Shadow DOM provides encapsulation for web components, isolating CSS and JavaScript.'],
-        bulletPoints: [
-          'Elements inside Shadow DOM are hidden from regular DOM queries',
-          'Used by modern web components and frameworks',
-          'Open Shadow DOM - Accessible via shadowRoot',
-          'Closed Shadow DOM - Cannot be accessed externally',
-        ],
-      },
-      {
-        title: 'Accessing Shadow DOM (Selenium 4)',
-        code: `// Find the shadow host element
+        title: 'Shadow DOM Handling',
+        codeExplanation: 'Shadow DOM encapsulates elements from main DOM. Standard locators cannot find shadow elements. Selenium 4 provides getShadowRoot(). First find shadow host, then get shadow root, then find elements inside.',
+        code: `// Selenium 4 - Native Shadow DOM support
 WebElement shadowHost = driver.findElement(By.cssSelector("custom-element"));
 
-// Get the shadow root using Selenium 4 native method
+// Get shadow root
 SearchContext shadowRoot = shadowHost.getShadowRoot();
 
-// Find elements within shadow DOM
+// Find elements inside shadow DOM
 WebElement shadowInput = shadowRoot.findElement(By.cssSelector("input"));
-WebElement shadowButton = shadowRoot.findElement(By.cssSelector("button"));
-
-// Interact with shadow DOM elements
 shadowInput.sendKeys("Text inside Shadow DOM");
-shadowButton.click();`,
-        codeTitle: 'Selenium 4 Shadow DOM',
+
+// Nested shadow DOM
+WebElement innerHost = shadowRoot.findElement(By.cssSelector("inner-component"));
+SearchContext innerShadow = innerHost.getShadowRoot();
+WebElement deepElement = innerShadow.findElement(By.cssSelector(".deep-content"));`,
+        codeTitle: 'Shadow DOM (Selenium 4)',
       },
       {
         title: 'Headless Browser Execution',
-        code: `ChromeOptions options = new ChromeOptions();
-
-// Enable headless mode
-options.addArguments("--headless=new");
-options.addArguments("--disable-gpu");
+        codeExplanation: 'Headless mode runs browser without UI. Faster execution, ideal for CI/CD. --headless=new for Chrome 109+. Set window size explicitly. Useful for server environments.',
+        code: `// Chrome Headless
+ChromeOptions options = new ChromeOptions();
+options.addArguments("--headless=new");  // New headless mode
 options.addArguments("--window-size=1920,1080");
+options.addArguments("--disable-gpu");
 options.addArguments("--no-sandbox");
-
-// Create driver with headless options
 WebDriver driver = new ChromeDriver(options);
 
-// Run tests without visible browser
-driver.get("https://www.coursera.org");
-System.out.println("Title: " + driver.getTitle());
-
-driver.quit();`,
-        codeTitle: 'Headless Chrome',
+// Firefox Headless
+FirefoxOptions ffOptions = new FirefoxOptions();
+ffOptions.addArguments("-headless");
+ffOptions.addArguments("--width=1920");
+ffOptions.addArguments("--height=1080");
+WebDriver driver = new FirefoxDriver(ffOptions);`,
+        codeTitle: 'Headless Execution',
       },
       {
         title: 'Chrome DevTools Protocol',
+        codeExplanation: 'Selenium 4 provides CDP integration. DevTools API for network, console, performance. Intercept network requests. Capture console logs. Simulate network conditions.',
         code: `ChromeDriver driver = new ChromeDriver();
 DevTools devTools = driver.getDevTools();
 devTools.createSession();
 
-// Mock geolocation
-devTools.send(Emulation.setGeolocationOverride(
-    Optional.of(19.0760),  // Latitude (Mumbai)
-    Optional.of(72.8777),  // Longitude
-    Optional.of(100.0)     // Accuracy
+// Capture console logs
+devTools.send(Log.enable());
+devTools.addListener(Log.entryAdded(), entry -> {
+    System.out.println("Console: " + entry.getText());
+});
+
+// Simulate slow network
+devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
+devTools.send(Network.emulateNetworkConditions(
+    false, 100, 1000, 500, Optional.empty()
 ));
 
-// Capture network traffic
-devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
-devTools.addListener(Network.requestWillBeSent(), request -> {
-    System.out.println("Request: " + request.getRequest().getUrl());
-});`,
-        codeTitle: 'CDP Features',
+driver.get("https://www.coursera.org");`,
+        codeTitle: 'Chrome DevTools Protocol',
       },
       {
-        title: 'Mobile Emulation',
-        code: `Map<String, Object> deviceMetrics = new HashMap<>();
+        title: 'Cookie Management',
+        codeExplanation: 'Cookies maintain session state. getCookies() gets all cookies. addCookie() adds new cookie. deleteCookie() removes specific cookie. Use to bypass login in tests.',
+        code: `// Get all cookies
+Set<Cookie> cookies = driver.manage().getCookies();
+
+// Get specific cookie
+Cookie sessionCookie = driver.manage().getCookieNamed("session_id");
+
+// Add cookie
+Cookie newCookie = new Cookie.Builder("auth_token", "abc123")
+    .domain(".coursera.org")
+    .path("/")
+    .isSecure(true)
+    .build();
+driver.manage().addCookie(newCookie);
+
+// Delete cookies
+driver.manage().deleteCookieNamed("session_id");
+driver.manage().deleteAllCookies();`,
+        codeTitle: 'Cookie Management',
+      },
+      {
+        title: 'Mobile Web Testing',
+        codeExplanation: 'Chrome DevTools can emulate mobile devices. Set device metrics for screen size. Enable touch events. Set user agent. Useful for responsive testing.',
+        code: `ChromeDriver driver = new ChromeDriver();
+DevTools devTools = driver.getDevTools();
+devTools.createSession();
+
+// Emulate iPhone 12 Pro
+Map<String, Object> deviceMetrics = new HashMap<>();
 deviceMetrics.put("width", 390);
 deviceMetrics.put("height", 844);
-deviceMetrics.put("pixelRatio", 3.0);
 deviceMetrics.put("mobile", true);
+deviceMetrics.put("deviceScaleFactor", 3);
 
-Map<String, Object> mobileEmulation = new HashMap<>();
-mobileEmulation.put("deviceMetrics", deviceMetrics);
-mobileEmulation.put("userAgent", "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0)...");
+devTools.send(Emulation.setDeviceMetricsOverride(
+    390, 844, 3, true,
+    Optional.empty(), Optional.empty(), Optional.empty(),
+    Optional.empty(), Optional.empty(), Optional.empty(),
+    Optional.empty(), Optional.empty(), Optional.empty()
+));
 
-ChromeOptions options = new ChromeOptions();
-options.setExperimentalOption("mobileEmulation", mobileEmulation);
-
-WebDriver driver = new ChromeDriver(options);`,
+driver.get("https://www.coursera.org");`,
         codeTitle: 'Mobile Emulation',
       },
     ],
   },
   'interview-prep': {
-    sectionTitle: 'Interview & Real Project',
+    sectionTitle: 'Interview Preparation',
     sectionNumber: 12,
     slides: [
       {
-        title: 'Top Selenium Interview Questions',
+        title: 'Q1: What is Selenium and Components?',
+        content: ['Selenium is an open-source web automation framework with 4 components:'],
         bulletPoints: [
-          'What is the difference between findElement and findElements?',
-          'Explain the difference between close() and quit()',
-          'What are the different types of waits in Selenium?',
-          'How do you handle dynamic elements?',
-          'What is Page Object Model and why use it?',
-          'How do you handle alerts, frames, and multiple windows?',
-          'What is the difference between CSS Selector and XPath?',
+          'Selenium IDE - Record and playback browser extension',
+          'Selenium WebDriver - Core API for browser automation (industry standard)',
+          'Selenium Grid - Distributed parallel execution',
+          'Selenium RC - Deprecated, replaced by WebDriver',
+        ],
+        codeExplanation: 'Real Scenario: Automating Coursera login demonstrates WebDriver component. Create driver, navigate to URL, interact with elements, verify results, close browser.',
+        code: `WebDriver driver = new ChromeDriver();
+driver.get("https://www.coursera.org/login");
+driver.findElement(By.id("email")).sendKeys("user@email.com");
+driver.findElement(By.id("password")).sendKeys("password123");
+driver.findElement(By.xpath("//button[text()='Login']")).click();
+Assert.assertTrue(driver.getCurrentUrl().contains("/browse"));
+driver.quit();`,
+        codeTitle: 'Coursera Login Example',
+      },
+      {
+        title: 'Q2: close() vs quit()',
+        content: ['close() closes current window only. quit() closes all windows and ends session.'],
+        codeExplanation: 'Real Scenario: BookMyShow opens payment gateway in new window. Use close() on payment window, then switch back to booking window. Use quit() at end to close everything.',
+        code: `String mainWindow = driver.getWindowHandle();
+driver.findElement(By.id("payNow")).click(); // Opens new window
+
+// Switch to payment window
+for (String window : driver.getWindowHandles()) {
+    if (!window.equals(mainWindow)) {
+        driver.switchTo().window(window);
+        break;
+    }
+}
+
+driver.findElement(By.id("cardNumber")).sendKeys("4111111111111111");
+driver.close();  // Close payment window ONLY
+driver.switchTo().window(mainWindow);  // Back to booking
+driver.quit();  // Close all at end`,
+        codeTitle: 'BookMyShow Payment Window',
+      },
+      {
+        title: 'Q3: Types of Waits',
+        content: ['Implicit (global), Explicit (condition-specific), Fluent (custom polling)'],
+        codeExplanation: 'Real Scenario: Coursera search shows loading spinner. Implicit wait for basic elements. Explicit wait for spinner to disappear and results to load.',
+        code: `// Implicit - global, applies to all findElement
+driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+
+// Explicit - condition-specific (RECOMMENDED)
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+
+// Wait for spinner to disappear
+wait.until(ExpectedConditions.invisibilityOfElementLocated(
+    By.className("loading-spinner")
+));
+
+// Wait for results
+WebElement results = wait.until(
+    ExpectedConditions.visibilityOfElementLocated(By.className("search-results"))
+);`,
+        codeTitle: 'Coursera Search Waits',
+      },
+      {
+        title: 'Q4: Handle Dynamic Elements',
+        content: ['Use partial matching, data attributes, or element relationships.'],
+        codeExplanation: 'Real Scenario: BookMyShow seat IDs include session prefix (seat_abc123_A1). Use data-seat attribute or partial ID matching instead of full dynamic ID.',
+        code: `// BAD: Full dynamic ID
+driver.findElement(By.id("seat_abc123_A1")); // Changes each session!
+
+// GOOD: Use data attribute
+driver.findElement(By.cssSelector("[data-seat='A1']"));
+
+// GOOD: Partial ID matching
+driver.findElement(By.cssSelector("[id*='_A1']"));
+
+// GOOD: Find by relationship
+driver.findElement(By.xpath(
+    "//div[@class='theater'][.//h4[text()='PVR']]" +
+    "//div[@class='showtime'][.//span[text()='7:00 PM']]//button"
+));`,
+        codeTitle: 'BookMyShow Dynamic Seats',
+      },
+      {
+        title: 'Q5: Page Object Model',
+        content: ['Design pattern: Each page is a class with locators and actions.'],
+        codeExplanation: 'Real Scenario: Coursera login page as Page Object. Private locators centralized. Public methods for user actions. Test classes use page methods, not direct locators.',
+        code: `public class CourseraLoginPage {
+    private By emailField = By.id("email");
+    private By passwordField = By.id("password");
+    private By loginButton = By.xpath("//button[text()='Login']");
+    
+    public void login(String email, String password) {
+        driver.findElement(emailField).sendKeys(email);
+        driver.findElement(passwordField).sendKeys(password);
+        driver.findElement(loginButton).click();
+    }
+}
+
+// Test class - clean, readable
+loginPage.login("user@email.com", "password123");
+Assert.assertTrue(homePage.isDisplayed());`,
+        codeTitle: 'Coursera Login POM',
+      },
+      {
+        title: 'Q6: Handle Frames',
+        content: ['switchTo().frame() by index, name, or WebElement. defaultContent() to return.'],
+        codeExplanation: 'Real Scenario: Coursera video player in iframe. Switch to frame before interacting with player controls. Switch back after.',
+        code: `// Wait for iframe
+WebElement videoFrame = wait.until(
+    ExpectedConditions.presenceOfElementLocated(By.id("video-player"))
+);
+
+// Switch to frame
+driver.switchTo().frame(videoFrame);
+
+// Interact inside frame
+WebElement playBtn = driver.findElement(By.className("play-btn"));
+playBtn.click();
+
+// Return to main page
+driver.switchTo().defaultContent();
+
+// Continue with main page elements
+driver.findElement(By.className("course-title"));`,
+        codeTitle: 'Coursera Video Frame',
+      },
+      {
+        title: 'Q7: Handle Alerts',
+        content: ['switchTo().alert() returns Alert. accept() for OK, dismiss() for Cancel.'],
+        codeExplanation: 'Real Scenario: BookMyShow booking confirmation alert. Wait for alert, get message, accept or dismiss based on content.',
+        code: `driver.findElement(By.id("confirmBooking")).click();
+
+// Wait for alert
+Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+
+// Get alert text
+String message = alert.getText();
+System.out.println("Alert: " + message);
+
+// Accept (OK) or Dismiss (Cancel)
+if (message.contains("confirm your booking")) {
+    alert.accept();
+} else {
+    alert.dismiss();
+}`,
+        codeTitle: 'BookMyShow Confirmation Alert',
+      },
+      {
+        title: 'Q8: Handle Multiple Windows',
+        content: ['getWindowHandle() for current, getWindowHandles() for all, switchTo().window()'],
+        codeExplanation: 'Real Scenario: RedBus opens train details in new window. Store main window, switch to new, interact, close, return.',
+        code: `String mainWindow = driver.getWindowHandle();
+driver.findElement(By.linkText("View Details")).click();
+
+// Wait for new window
+wait.until(ExpectedConditions.numberOfWindowsToBe(2));
+
+// Switch to new window
+for (String window : driver.getWindowHandles()) {
+    if (!window.equals(mainWindow)) {
+        driver.switchTo().window(window);
+        break;
+    }
+}
+
+// Work in new window
+System.out.println("New: " + driver.getTitle());
+
+// Close and return
+driver.close();
+driver.switchTo().window(mainWindow);`,
+        codeTitle: 'RedBus Train Details Window',
+      },
+      {
+        title: 'Q9: StaleElementReferenceException',
+        content: ['Element reference invalid after DOM change. Solution: re-find element.'],
+        codeExplanation: 'Real Scenario: Coursera filter changes course list via AJAX. Old element references become stale. Re-find after DOM changes.',
+        code: `WebElement firstCourse = driver.findElement(By.cssSelector(".course-card"));
+System.out.println("Before: " + firstCourse.getText());
+
+// Apply filter - DOM refreshes
+driver.findElement(By.xpath("//label[text()='Beginner']")).click();
+wait.until(ExpectedConditions.invisibilityOfElementLocated(By.className("spinner")));
+
+// firstCourse is now STALE!
+// Solution: Re-find the element
+WebElement refreshedCourse = driver.findElement(By.cssSelector(".course-card"));
+System.out.println("After: " + refreshedCourse.getText());`,
+        codeTitle: 'Coursera Filter Stale Element',
+      },
+      {
+        title: 'Q10: Handle Dropdowns',
+        content: ['Select class for <select>. Custom dropdowns: click to open, find option.'],
+        codeExplanation: 'Real Scenario: BookMyShow city is custom dropdown (not <select>). Click trigger, wait for list, type to search, click option.',
+        code: `// CUSTOM dropdown (BookMyShow city)
+driver.findElement(By.className("city-selector")).click();
+wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("city-list")));
+driver.findElement(By.cssSelector(".city-search input")).sendKeys("Mumbai");
+driver.findElement(By.xpath("//li[text()='Mumbai']")).click();
+
+// STANDARD <select> dropdown
+WebElement dropdown = driver.findElement(By.id("ticketCount"));
+Select select = new Select(dropdown);
+select.selectByVisibleText("2 Tickets");
+select.selectByValue("2");
+select.selectByIndex(1);`,
+        codeTitle: 'BookMyShow Dropdowns',
+      },
+      {
+        title: 'Q11: DataProvider for Data-Driven Testing',
+        content: ['@DataProvider supplies test data. Each row is one test execution.'],
+        codeExplanation: 'Real Scenario: Test Coursera login with multiple credentials. DataProvider returns array of test data. Test runs once per row.',
+        code: `@DataProvider(name = "loginData")
+public Object[][] getLoginData() {
+    return new Object[][] {
+        {"valid@email.com", "Pass123", true},
+        {"invalid@email.com", "wrong", false},
+        {"", "password", false}
+    };
+}
+
+@Test(dataProvider = "loginData")
+public void testLogin(String email, String pass, boolean shouldPass) {
+    loginPage.login(email, pass);
+    if (shouldPass) {
+        Assert.assertTrue(homePage.isDisplayed());
+    } else {
+        Assert.assertTrue(loginPage.isErrorDisplayed());
+    }
+}`,
+        codeTitle: 'Coursera Login DataProvider',
+      },
+      {
+        title: 'Q12: TestNG Listeners',
+        content: ['ITestListener intercepts events. IRetryAnalyzer retries failed tests.'],
+        codeExplanation: 'Real Scenario: Capture screenshot on failure, log results, retry flaky tests. Listener integrates with CI/CD pipeline.',
+        code: `public class TestListener implements ITestListener {
+    @Override
+    public void onTestFailure(ITestResult result) {
+        System.out.println("FAILED: " + result.getName());
+        WebDriver driver = ((BaseTest) result.getInstance()).getDriver();
+        TakesScreenshot ts = (TakesScreenshot) driver;
+        File source = ts.getScreenshotAs(OutputType.FILE);
+        FileUtils.copyFile(source, new File("screenshots/" + result.getName() + ".png"));
+    }
+}
+
+public class RetryAnalyzer implements IRetryAnalyzer {
+    private int count = 0;
+    public boolean retry(ITestResult result) {
+        if (count < 2) { count++; return true; }
+        return false;
+    }
+}`,
+        codeTitle: 'Listener with Screenshot',
+      },
+      {
+        title: 'How to Explain Your Project',
+        content: ['Structure your answer: Framework, Tech Stack, Features, Applications, Metrics'],
+        bulletPoints: [
+          'Framework: Hybrid Selenium with Page Object Model',
+          'Tech Stack: Java, Selenium 4, TestNG, Maven, Jenkins',
+          'Features: Parallel execution, Extent Reports, Log4j, Data-driven',
+          'Applications: Coursera, BookMyShow, Ticket Booking',
+          'Metrics: 200+ tests, 60% manual effort reduction, 40% more bugs caught',
         ],
       },
       {
-        title: 'Sample Answer: Waits',
-        content: ['Question: What are the different types of waits in Selenium?'],
-        bulletPoints: [
-          'Implicit Wait: Set globally, waits for element to appear',
-          'Explicit Wait: Waits for specific condition (recommended)',
-          'Fluent Wait: Explicit wait with polling interval and exception handling',
-          'Thread.sleep(): Static wait, NOT recommended in automation',
-        ],
-      },
-      {
-        title: 'Explaining Your Framework',
-        bulletPoints: [
-          'Tech Stack: Java, Selenium 4, TestNG, Maven',
-          'Design Pattern: Page Object Model with Page Factory',
-          'Project Structure: Pages, Tests, Utilities, Configs',
-          'Reporting: Extent Reports with screenshots on failure',
-          'CI/CD: Jenkins pipeline with parallel execution',
-          'Version Control: Git with feature branching',
-          'Test Data: External files (Excel, JSON, Properties)',
-        ],
-      },
-      {
-        title: 'Real Project Challenges & Solutions',
+        title: 'Common Challenges & Solutions',
         table: {
           headers: ['Challenge', 'Solution'],
           rows: [
-            ['Dynamic elements', 'Use contains(), starts-with(), relative XPath'],
-            ['Flaky tests', 'Explicit waits, retry logic, stable locators'],
-            ['Slow execution', 'Parallel execution, headless mode'],
-            ['Test data management', 'External data sources, data providers'],
-            ['Cross-browser issues', 'Selenium Grid, browser-specific handling'],
+            ['StaleElementException', 'Re-find element, explicit waits, retry logic'],
+            ['Dynamic locators', 'Partial matching, data-testid, XPath axes'],
+            ['Synchronization', 'Explicit waits, fluent waits, custom conditions'],
+            ['Parallel execution', 'ThreadLocal WebDriver, isolated test data'],
+            ['Flaky tests', 'RetryAnalyzer, stable locators, proper waits'],
           ],
         },
-      },
-      {
-        title: 'Key Takeaways',
-        bulletPoints: [
-          'Master locator strategies - ID > CSS > XPath',
-          'Always use explicit waits over implicit waits',
-          'Implement Page Object Model from day one',
-          'Write maintainable, readable test code',
-          'Handle exceptions gracefully with screenshots',
-          'Use version control and CI/CD integration',
-          'Practice with real applications like Coursera, BookMyShow',
-        ],
       },
     ],
   },
