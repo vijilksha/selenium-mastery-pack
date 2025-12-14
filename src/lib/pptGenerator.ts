@@ -17,13 +17,14 @@ interface SectionPPTData {
 }
 
 const THEME = {
-  background: '0C1220',
-  primary: '3B82F6',
-  secondary: '60A5FA',
-  text: 'E2E8F0',
-  muted: '94A3B8',
-  codeBg: '1E293B',
-  highlight: '2563EB',
+  background: 'FFFFFF',
+  primary: '2563EB',
+  secondary: '3B82F6',
+  text: '1E293B',
+  muted: '64748B',
+  codeBg: 'F1F5F9',
+  highlight: '1D4ED8',
+  border: 'E2E8F0',
 };
 
 export const generateSectionPPT = async (data: SectionPPTData) => {
