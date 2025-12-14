@@ -1446,15 +1446,64 @@ Assert.assertTrue(successMsg.getText().contains("uploaded"));`,
         ],
       },
       {
+        title: 'Without POM vs With POM',
+        table: {
+          headers: ['Aspect', 'Without POM', 'With POM'],
+          rows: [
+            ['Locators', 'Scattered in test files', 'Centralized in page classes'],
+            ['Code Duplication', 'High duplication', 'No duplication'],
+            ['Maintenance', 'Hard to maintain', 'Easy maintenance'],
+            ['Test Readability', 'Hard to understand', 'Clean and readable'],
+            ['UI Changes', 'Update all tests', 'Update one page class'],
+          ],
+        },
+      },
+      {
+        title: 'Page Object Structure',
+        codeExplanation: 'Page Object contains: 1) Private locators as By objects for encapsulation. 2) Constructor to initialize driver and wait. 3) Public methods for user actions. 4) Methods return next page object for fluent navigation.',
+        code: `public class LoginPage {
+    private WebDriver driver;
+    private WebDriverWait wait;
+    
+    // Locators - Private, centralized
+    private By usernameField = By.id("username");
+    private By passwordField = By.id("password");
+    private By loginButton = By.id("loginBtn");
+    private By errorMessage = By.className("error-msg");
+    
+    public LoginPage(WebDriver driver) {
+        this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+    
+    // Methods return next page for fluent navigation
+    public HomePage login(String username, String password) {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(usernameField))
+            .sendKeys(username);
+        driver.findElement(passwordField).sendKeys(password);
+        driver.findElement(loginButton).click();
+        return new HomePage(driver);  // Return next page
+    }
+    
+    public String getErrorMessage() {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(errorMessage))
+                   .getText();
+    }
+}`,
+        codeTitle: 'LoginPage.java',
+      },
+      {
         title: 'BasePage Pattern',
-        codeExplanation: 'Abstract BasePage provides common functionality. Protected members accessible to child pages. Common waits and actions centralized. All page objects extend BasePage.',
+        codeExplanation: 'Abstract BasePage provides common functionality. Protected members accessible to child pages. Common waits, clicks, and type actions centralized. All page objects extend BasePage for consistency.',
         code: `public abstract class BasePage {
     protected WebDriver driver;
     protected WebDriverWait wait;
+    protected JavascriptExecutor js;
     
     public BasePage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        this.js = (JavascriptExecutor) driver;
     }
     
     protected WebElement waitForVisible(By locator) {
@@ -1471,13 +1520,17 @@ Assert.assertTrue(successMsg.getText().contains("uploaded"));`,
         el.sendKeys(text);
     }
     
+    protected void jsClick(WebElement element) {
+        js.executeScript("arguments[0].click();", element);
+    }
+    
     public abstract boolean isPageLoaded();
 }`,
         codeTitle: 'BasePage.java',
       },
       {
         title: 'Page Factory Pattern',
-        codeExplanation: '@FindBy annotation defines locators. PageFactory.initElements() initializes elements. @CacheLookup caches static elements. Elements are lazily initialized on first use.',
+        codeExplanation: '@FindBy annotation defines locators declaratively. PageFactory.initElements() initializes elements lazily. @CacheLookup caches static elements for performance. Elements are proxied and located on first use.',
         code: `public class CourseraHomePage {
     private WebDriver driver;
     
@@ -1488,25 +1541,66 @@ Assert.assertTrue(successMsg.getText().contains("uploaded"));`,
     private List<WebElement> courseCards;
     
     @FindBy(linkText = "Sign In")
-    @CacheLookup  // Cache for static elements
+    @CacheLookup  // Cache for static elements only
     private WebElement signInLink;
+    
+    @FindBy(how = How.XPATH, using = "//button[@type='submit']")
+    private WebElement searchButton;
     
     public CourseraHomePage(WebDriver driver) {
         this.driver = driver;
-        PageFactory.initElements(driver, this);
+        PageFactory.initElements(driver, this);  // Initialize elements
     }
     
     public void searchCourse(String name) {
         searchBox.clear();
         searchBox.sendKeys(name);
-        searchBox.sendKeys(Keys.ENTER);
+        searchButton.click();
+    }
+    
+    public int getCourseCount() {
+        return courseCards.size();
     }
 }`,
-        codeTitle: 'Page Factory',
+        codeTitle: 'Page Factory Example',
+      },
+      {
+        title: 'Reusable Components Pattern',
+        codeExplanation: 'Common UI components like header, footer, modal, pagination are separate classes. Components are composed in page objects. Reduces duplication across pages that share common elements.',
+        code: `public class CommonComponents {
+    private WebDriver driver;
+    private WebDriverWait wait;
+    
+    public CommonComponents(WebDriver driver) {
+        this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+    
+    // Header component methods
+    public void searchGlobal(String term) {
+        driver.findElement(By.id("globalSearch")).sendKeys(term + Keys.ENTER);
+    }
+    
+    // Modal component methods
+    public void closeModal() {
+        wait.until(ExpectedConditions.elementToBeClickable(
+            By.cssSelector(".modal .close-button")
+        )).click();
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(
+            By.className("modal-overlay")
+        ));
+    }
+    
+    // Pagination component methods
+    public void goToPage(int pageNumber) {
+        driver.findElement(By.xpath("//a[text()='" + pageNumber + "']")).click();
+    }
+}`,
+        codeTitle: 'CommonComponents.java',
       },
       {
         title: 'Logging with Log4j2',
-        codeExplanation: 'Log4j2 provides structured logging. Logger per class with getLogger(). log.info() for key actions. log.debug() for details. log.error() for failures. Logs help debug failures.',
+        codeExplanation: 'Log4j2 provides structured logging. LogManager.getLogger() creates logger per class. log.info() for key actions. log.debug() for details. log.error() for failures. Logs stored in rolling files.',
         code: `public class BookingTest extends BaseTest {
     private static final Logger log = LogManager.getLogger(BookingTest.class);
     
@@ -1534,35 +1628,165 @@ Assert.assertTrue(successMsg.getText().contains("uploaded"));`,
         codeTitle: 'Logging Example',
       },
       {
+        title: 'Log4j2 Configuration',
+        codeExplanation: 'XML configuration for Log4j2. Console appender for real-time logs. RollingFile appender for log files with size/time policies. Separate error log file. Pattern includes timestamp, thread, level.',
+        code: `<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+  <Properties>
+    <Property name="logPath">logs</Property>
+    <Property name="pattern">
+      %d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n
+    </Property>
+  </Properties>
+  
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="\${pattern}"/>
+    </Console>
+    <RollingFile name="FileLogger" 
+                 fileName="\${logPath}/automation.log"
+                 filePattern="\${logPath}/automation-%d{yyyy-MM-dd}.log">
+      <PatternLayout pattern="\${pattern}"/>
+      <Policies>
+        <SizeBasedTriggeringPolicy size="10MB"/>
+      </Policies>
+    </RollingFile>
+  </Appenders>
+  
+  <Loggers>
+    <Root level="INFO">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="FileLogger"/>
+    </Root>
+  </Loggers>
+</Configuration>`,
+        codeTitle: 'log4j2.xml',
+      },
+      {
         title: 'Extent Reports Integration',
         codeExplanation: 'ExtentReports generates HTML reports. ExtentSparkReporter configures output. createTest() for each test. log() records pass/fail/info. attachScreenshot() adds images. flush() writes report.',
         code: `public class ExtentReportManager {
     private static ExtentReports extent;
-    private static ExtentTest test;
+    private static ThreadLocal<ExtentTest> test = new ThreadLocal<>();
     
-    public static void initReport(String suiteName) {
-        ExtentSparkReporter spark = new ExtentSparkReporter("reports/report.html");
+    public static void initReport() {
+        ExtentSparkReporter spark = new ExtentSparkReporter("reports/extent.html");
+        spark.config().setTheme(Theme.STANDARD);
+        spark.config().setDocumentTitle("Automation Report");
+        
         extent = new ExtentReports();
         extent.attachReporter(spark);
+        extent.setSystemInfo("Environment", "QA");
+        extent.setSystemInfo("Browser", "Chrome");
     }
     
     public static void createTest(String testName) {
-        test = extent.createTest(testName);
+        test.set(extent.createTest(testName));
     }
     
     public static void logPass(String message) {
-        test.log(Status.PASS, message);
+        test.get().log(Status.PASS, message);
     }
     
-    public static void logFail(Throwable t) {
-        test.log(Status.FAIL, t);
+    public static void logFail(String message, Throwable t) {
+        test.get().log(Status.FAIL, message);
+        test.get().fail(t);
+    }
+    
+    public static void attachScreenshot(String path) {
+        test.get().addScreenCaptureFromPath(path);
     }
     
     public static void flushReport() {
         extent.flush();
     }
 }`,
-        codeTitle: 'Extent Reports',
+        codeTitle: 'ExtentReportManager.java',
+      },
+      {
+        title: 'Screenshot on Failure',
+        codeExplanation: 'TestNG listener captures screenshots on test failure. Get driver from test instance. TakesScreenshot interface captures image. Save with test name and timestamp. Attach to report.',
+        code: `public class TestListener implements ITestListener {
+    
+    @Override
+    public void onTestFailure(ITestResult result) {
+        WebDriver driver = ((BaseTest) result.getInstance()).getDriver();
+        
+        // Generate unique filename
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String screenshotName = result.getName() + "_" + timestamp + ".png";
+        String screenshotPath = "screenshots/" + screenshotName;
+        
+        try {
+            // Capture screenshot
+            File source = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            FileUtils.copyFile(source, new File(screenshotPath));
+            
+            // Attach to Extent Report
+            ExtentReportManager.attachScreenshot(screenshotPath);
+            ExtentReportManager.logFail("Test Failed", result.getThrowable());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    @Override
+    public void onTestSuccess(ITestResult result) {
+        ExtentReportManager.logPass("Test Passed: " + result.getName());
+    }
+}`,
+        codeTitle: 'Screenshot Listener',
+      },
+      {
+        title: 'Configuration Management',
+        codeExplanation: 'ConfigReader utility loads properties file once. Static block loads on class load. getProperty() provides typed access. Separates config from code for environment flexibility.',
+        code: `public class ConfigReader {
+    private static Properties properties;
+    
+    static {
+        try {
+            FileInputStream fis = new FileInputStream("src/test/resources/config.properties");
+            properties = new Properties();
+            properties.load(fis);
+        } catch (IOException e) {
+            throw new RuntimeException("Config file not found!");
+        }
+    }
+    
+    public static String getProperty(String key) {
+        return properties.getProperty(key);
+    }
+    
+    public static int getIntProperty(String key) {
+        return Integer.parseInt(properties.getProperty(key));
+    }
+    
+    public static boolean getBooleanProperty(String key) {
+        return Boolean.parseBoolean(properties.getProperty(key));
+    }
+}
+
+// config.properties
+// browser=chrome
+// baseUrl=https://www.coursera.org
+// implicitWait=10
+// headless=false`,
+        codeTitle: 'ConfigReader.java',
+      },
+      {
+        title: 'Framework Best Practices Summary',
+        bulletPoints: [
+          '✅ Use Page Object Model for all page interactions',
+          '✅ Create BasePage with common methods',
+          '✅ Use Page Factory for cleaner element declaration',
+          '✅ Implement proper logging with Log4j2',
+          '✅ Generate HTML reports with ExtentReports',
+          '✅ Capture screenshots on test failures',
+          '✅ Externalize configuration in properties files',
+          '✅ Use ThreadLocal for parallel test execution',
+          '❌ Avoid hardcoding values in test scripts',
+          '❌ Never use Thread.sleep() for synchronization',
+        ],
       },
     ],
   },
@@ -1571,46 +1795,155 @@ Assert.assertTrue(successMsg.getText().contains("uploaded"));`,
     sectionNumber: 11,
     slides: [
       {
-        title: 'Shadow DOM Handling',
-        codeExplanation: 'Shadow DOM encapsulates elements from main DOM. Standard locators cannot find shadow elements. Selenium 4 provides getShadowRoot(). First find shadow host, then get shadow root, then find elements inside.',
+        title: 'Understanding Shadow DOM',
+        content: ['Shadow DOM provides encapsulation for web components, isolating elements from main DOM.'],
+        bulletPoints: [
+          'Open Shadow DOM - Accessible via element.shadowRoot, Selenium can interact',
+          'Closed Shadow DOM - shadowRoot returns null, very difficult to automate',
+          'Standard locators cannot find elements inside Shadow DOM',
+          'Must get shadow root first, then find elements within it',
+          'Common in modern web frameworks and custom components',
+        ],
+      },
+      {
+        title: 'Shadow DOM - Selenium 4 Native Support',
+        codeExplanation: 'Selenium 4 provides native getShadowRoot() method. First find shadow host element. Get shadow root as SearchContext. Then find elements inside shadow DOM using standard locators.',
         code: `// Selenium 4 - Native Shadow DOM support
 WebElement shadowHost = driver.findElement(By.cssSelector("custom-element"));
 
-// Get shadow root
+// Get shadow root (returns SearchContext)
 SearchContext shadowRoot = shadowHost.getShadowRoot();
 
 // Find elements inside shadow DOM
 WebElement shadowInput = shadowRoot.findElement(By.cssSelector("input"));
-shadowInput.sendKeys("Text inside Shadow DOM");
+WebElement shadowButton = shadowRoot.findElement(By.cssSelector("button"));
 
-// Nested shadow DOM
-WebElement innerHost = shadowRoot.findElement(By.cssSelector("inner-component"));
-SearchContext innerShadow = innerHost.getShadowRoot();
-WebElement deepElement = innerShadow.findElement(By.cssSelector(".deep-content"));`,
-        codeTitle: 'Shadow DOM (Selenium 4)',
+// Interact with shadow elements
+shadowInput.sendKeys("Text in Shadow DOM");
+shadowButton.click();
+
+// Find multiple elements
+List<WebElement> items = shadowRoot.findElements(By.cssSelector("li"));`,
+        codeTitle: 'Shadow DOM Selenium 4',
+      },
+      {
+        title: 'Nested Shadow DOM Handling',
+        codeExplanation: 'For deeply nested shadow DOMs, traverse level by level. Get shadow root at each level. Find next host element within shadow root. Repeat until reaching target element.',
+        code: `// Nested Shadow DOM traversal
+public WebElement getNestedShadowElement() {
+    // Level 1: Outer component
+    WebElement outerHost = driver.findElement(By.cssSelector("outer-component"));
+    SearchContext outerShadow = outerHost.getShadowRoot();
+    
+    // Level 2: Inner component inside outer's shadow
+    WebElement innerHost = outerShadow.findElement(By.cssSelector("inner-component"));
+    SearchContext innerShadow = innerHost.getShadowRoot();
+    
+    // Level 3: Target element in innermost shadow
+    WebElement targetElement = innerShadow.findElement(By.cssSelector(".target"));
+    return targetElement;
+}
+
+// Generic traversal method
+public WebElement traverseShadowDOM(String... selectors) {
+    SearchContext context = driver;
+    for (int i = 0; i < selectors.length - 1; i++) {
+        WebElement host = context.findElement(By.cssSelector(selectors[i]));
+        context = host.getShadowRoot();
+    }
+    return context.findElement(By.cssSelector(selectors[selectors.length - 1]));
+}`,
+        codeTitle: 'Nested Shadow DOM',
+      },
+      {
+        title: 'Shadow DOM - JavaScript Approach',
+        codeExplanation: 'For Selenium 3 or complex scenarios, use JavaScriptExecutor. executeScript() can access shadowRoot property. querySelector inside shadow root finds elements. Works with both Selenium 3 and 4.',
+        code: `public class ShadowDOMHandler {
+    private JavascriptExecutor js;
+    
+    public ShadowDOMHandler(WebDriver driver) {
+        this.js = (JavascriptExecutor) driver;
+    }
+    
+    // Get shadow root using JavaScript
+    public WebElement getShadowRoot(WebElement host) {
+        return (WebElement) js.executeScript(
+            "return arguments[0].shadowRoot", host
+        );
+    }
+    
+    // Find element in shadow DOM
+    public WebElement findInShadow(WebElement shadowRoot, String css) {
+        return (WebElement) js.executeScript(
+            "return arguments[0].querySelector(arguments[1])", 
+            shadowRoot, css
+        );
+    }
+    
+    // One-liner for simple shadow access
+    public WebElement getShadowElement(String hostCss, String elementCss) {
+        return (WebElement) js.executeScript(
+            "return document.querySelector('" + hostCss + "')" +
+            ".shadowRoot.querySelector('" + elementCss + "')"
+        );
+    }
+}`,
+        codeTitle: 'JavaScript Shadow DOM',
       },
       {
         title: 'Headless Browser Execution',
-        codeExplanation: 'Headless mode runs browser without UI. Faster execution, ideal for CI/CD. --headless=new for Chrome 109+. Set window size explicitly. Useful for server environments.',
+        content: ['Headless mode runs browser without UI. Faster execution, ideal for CI/CD.'],
+        bulletPoints: [
+          '--headless=new for Chrome 109+ (improved headless mode)',
+          'Set window size explicitly: --window-size=1920,1080',
+          '--no-sandbox and --disable-dev-shm-usage for Docker/CI',
+          'Screenshots still work in headless mode',
+          'Useful for servers without display (Jenkins, GitHub Actions)',
+        ],
+      },
+      {
+        title: 'Headless Configuration',
+        codeExplanation: 'Configure headless mode with browser options. Chrome uses --headless=new for new mode. Firefox uses -headless. Set window size explicitly. Add anti-detection options.',
         code: `// Chrome Headless
-ChromeOptions options = new ChromeOptions();
-options.addArguments("--headless=new");  // New headless mode
-options.addArguments("--window-size=1920,1080");
-options.addArguments("--disable-gpu");
-options.addArguments("--no-sandbox");
-WebDriver driver = new ChromeDriver(options);
+ChromeOptions chromeOptions = new ChromeOptions();
+chromeOptions.addArguments("--headless=new");       // New headless mode
+chromeOptions.addArguments("--window-size=1920,1080");
+chromeOptions.addArguments("--disable-gpu");
+chromeOptions.addArguments("--no-sandbox");
+chromeOptions.addArguments("--disable-dev-shm-usage");
+
+// Prevent detection as headless
+chromeOptions.addArguments("--disable-blink-features=AutomationControlled");
+WebDriver driver = new ChromeDriver(chromeOptions);
 
 // Firefox Headless
 FirefoxOptions ffOptions = new FirefoxOptions();
 ffOptions.addArguments("-headless");
 ffOptions.addArguments("--width=1920");
 ffOptions.addArguments("--height=1080");
-WebDriver driver = new FirefoxDriver(ffOptions);`,
-        codeTitle: 'Headless Execution',
+WebDriver driver = new FirefoxDriver(ffOptions);
+
+// Edge Headless
+EdgeOptions edgeOptions = new EdgeOptions();
+edgeOptions.addArguments("--headless=new");
+WebDriver driver = new EdgeDriver(edgeOptions);`,
+        codeTitle: 'Headless Configuration',
       },
       {
-        title: 'Chrome DevTools Protocol',
-        codeExplanation: 'Selenium 4 provides CDP integration. DevTools API for network, console, performance. Intercept network requests. Capture console logs. Simulate network conditions.',
+        title: 'Chrome DevTools Protocol (CDP)',
+        content: ['Selenium 4 provides native CDP integration for advanced browser control.'],
+        bulletPoints: [
+          'Network interception and monitoring',
+          'Console log capture',
+          'Performance metrics collection',
+          'Network condition emulation (slow 3G, offline)',
+          'Geolocation mocking',
+          'Device emulation for mobile testing',
+        ],
+      },
+      {
+        title: 'CDP - Network & Console',
+        codeExplanation: 'DevTools class provides CDP access. Enable Log domain to capture console. Enable Network domain for request monitoring. Add listeners for events. Useful for debugging and performance testing.',
         code: `ChromeDriver driver = new ChromeDriver();
 DevTools devTools = driver.getDevTools();
 devTools.createSession();
@@ -1618,63 +1951,150 @@ devTools.createSession();
 // Capture console logs
 devTools.send(Log.enable());
 devTools.addListener(Log.entryAdded(), entry -> {
-    System.out.println("Console: " + entry.getText());
+    System.out.println("Console [" + entry.getLevel() + "]: " + entry.getText());
 });
 
-// Simulate slow network
+// Monitor network requests
 devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
-devTools.send(Network.emulateNetworkConditions(
-    false, 100, 1000, 500, Optional.empty()
-));
+devTools.addListener(Network.requestWillBeSent(), request -> {
+    System.out.println("Request: " + request.getRequest().getUrl());
+});
+devTools.addListener(Network.responseReceived(), response -> {
+    System.out.println("Response: " + response.getResponse().getStatus());
+});
 
 driver.get("https://www.coursera.org");`,
-        codeTitle: 'Chrome DevTools Protocol',
+        codeTitle: 'CDP Network & Console',
+      },
+      {
+        title: 'CDP - Network Throttling',
+        codeExplanation: 'Emulate slow network conditions for testing. Set latency, download/upload speeds. Test application behavior on slow networks. Useful for performance and UX testing.',
+        code: `ChromeDriver driver = new ChromeDriver();
+DevTools devTools = driver.getDevTools();
+devTools.createSession();
+
+// Enable network domain
+devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
+
+// Simulate slow 3G network
+devTools.send(Network.emulateNetworkConditions(
+    false,           // offline
+    100,             // latency (ms)
+    750 * 1024 / 8,  // download throughput (bytes/sec) - 750 kbps
+    250 * 1024 / 8,  // upload throughput (bytes/sec) - 250 kbps
+    Optional.of(ConnectionType.CELLULAR3G)
+));
+
+// Test page load on slow network
+long startTime = System.currentTimeMillis();
+driver.get("https://www.coursera.org");
+long loadTime = System.currentTimeMillis() - startTime;
+System.out.println("Page load time on 3G: " + loadTime + "ms");`,
+        codeTitle: 'Network Throttling',
       },
       {
         title: 'Cookie Management',
-        codeExplanation: 'Cookies maintain session state. getCookies() gets all cookies. addCookie() adds new cookie. deleteCookie() removes specific cookie. Use to bypass login in tests.',
+        codeExplanation: 'Cookies maintain session state. getCookies() retrieves all. addCookie() creates new cookie with builder. deleteCookieNamed() removes specific cookie. Useful for bypassing login in tests.',
         code: `// Get all cookies
 Set<Cookie> cookies = driver.manage().getCookies();
+for (Cookie cookie : cookies) {
+    System.out.println(cookie.getName() + " = " + cookie.getValue());
+}
 
 // Get specific cookie
 Cookie sessionCookie = driver.manage().getCookieNamed("session_id");
+System.out.println("Session: " + sessionCookie.getValue());
 
-// Add cookie
-Cookie newCookie = new Cookie.Builder("auth_token", "abc123")
+// Add cookie (e.g., to bypass login)
+Cookie authCookie = new Cookie.Builder("auth_token", "abc123xyz")
     .domain(".coursera.org")
     .path("/")
     .isSecure(true)
+    .expiresOn(new Date(System.currentTimeMillis() + 3600000))
     .build();
-driver.manage().addCookie(newCookie);
+driver.manage().addCookie(authCookie);
+driver.navigate().refresh();  // Reload with new cookie
 
 // Delete cookies
-driver.manage().deleteCookieNamed("session_id");
-driver.manage().deleteAllCookies();`,
+driver.manage().deleteCookieNamed("promo_shown");
+driver.manage().deleteAllCookies();  // Clear all`,
         codeTitle: 'Cookie Management',
       },
       {
-        title: 'Mobile Web Testing',
-        codeExplanation: 'Chrome DevTools can emulate mobile devices. Set device metrics for screen size. Enable touch events. Set user agent. Useful for responsive testing.',
+        title: 'Local & Session Storage',
+        codeExplanation: 'Access browser storage via JavaScriptExecutor. localStorage persists across sessions. sessionStorage cleared when tab closes. Useful for testing storage-dependent features.',
+        code: `JavascriptExecutor js = (JavascriptExecutor) driver;
+
+// Get localStorage item
+String token = (String) js.executeScript(
+    "return localStorage.getItem('authToken');"
+);
+
+// Set localStorage item
+js.executeScript(
+    "localStorage.setItem('userPrefs', JSON.stringify({theme: 'dark'}));"
+);
+
+// Remove localStorage item
+js.executeScript("localStorage.removeItem('tempData');");
+
+// Clear all localStorage
+js.executeScript("localStorage.clear();");
+
+// Session storage (same API)
+js.executeScript("sessionStorage.setItem('pageVisited', 'true');");
+String visited = (String) js.executeScript(
+    "return sessionStorage.getItem('pageVisited');"
+);`,
+        codeTitle: 'Browser Storage',
+      },
+      {
+        title: 'Mobile Web Emulation',
+        codeExplanation: 'Chrome DevTools can emulate mobile devices. Set device metrics for screen size. Enable touch events. Set mobile user agent. Useful for responsive design testing.',
         code: `ChromeDriver driver = new ChromeDriver();
 DevTools devTools = driver.getDevTools();
 devTools.createSession();
 
 // Emulate iPhone 12 Pro
-Map<String, Object> deviceMetrics = new HashMap<>();
-deviceMetrics.put("width", 390);
-deviceMetrics.put("height", 844);
-deviceMetrics.put("mobile", true);
-deviceMetrics.put("deviceScaleFactor", 3);
-
 devTools.send(Emulation.setDeviceMetricsOverride(
-    390, 844, 3, true,
-    Optional.empty(), Optional.empty(), Optional.empty(),
-    Optional.empty(), Optional.empty(), Optional.empty(),
+    390,              // width
+    844,              // height  
+    3,                // deviceScaleFactor (retina)
+    true,             // mobile
+    Optional.empty(), // scale
+    Optional.empty(), // screenWidth
+    Optional.empty(), // screenHeight
+    Optional.empty(), // positionX
+    Optional.empty(), // positionY
+    Optional.empty(), // dontSetVisibleSize
+    Optional.empty(), // screenOrientation
+    Optional.empty(), // viewport
+    Optional.empty()  // displayFeature
+));
+
+// Set mobile user agent
+devTools.send(Emulation.setUserAgentOverride(
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)...",
     Optional.empty(), Optional.empty(), Optional.empty()
 ));
 
 driver.get("https://www.coursera.org");`,
         codeTitle: 'Mobile Emulation',
+      },
+      {
+        title: 'Advanced Concepts Summary',
+        table: {
+          headers: ['Concept', 'Use Case', 'Key Method'],
+          rows: [
+            ['Shadow DOM', 'Web components', 'getShadowRoot()'],
+            ['Headless Mode', 'CI/CD pipelines', '--headless=new'],
+            ['CDP Network', 'Performance testing', 'Network.enable()'],
+            ['CDP Console', 'Debug logging', 'Log.enable()'],
+            ['Cookies', 'Session management', 'manage().getCookies()'],
+            ['Storage', 'Client-side data', 'localStorage API'],
+            ['Mobile Emulation', 'Responsive testing', 'setDeviceMetricsOverride()'],
+          ],
+        },
       },
     ],
   },
