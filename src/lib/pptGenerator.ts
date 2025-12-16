@@ -577,62 +577,258 @@ WebElement field = driver.findElement(
     slides: [
       {
         title: 'Locator Priority Order',
-        content: ['Use locators in this priority for maximum stability:'],
+        content: ['Always prefer the most reliable and maintainable locator strategy. Follow this priority order for best results.'],
         table: {
-          headers: ['Priority', 'Locator', 'When to Use'],
+          headers: ['Priority', 'Locator', 'Speed', 'When to Use'],
           rows: [
-            ['1', 'ID', 'Always prefer if unique and stable'],
-            ['2', 'Name', 'Good for form inputs'],
-            ['3', 'data-testid', 'Most stable (request from developers)'],
-            ['4', 'CSS Selector', 'Fast, flexible, readable'],
-            ['5', 'XPath', 'Text matching, DOM traversal'],
-            ['6', 'Link Text', 'Anchor elements only'],
+            ['1', 'ID', 'Fastest', 'Always prefer if unique and stable'],
+            ['2', 'Name', 'Fast', 'Good for form inputs'],
+            ['3', 'Data Attributes', 'Fast', 'data-testid, data-automation (most stable)'],
+            ['4', 'CSS Selector', 'Fast', 'Flexible, readable, supports pseudo-classes'],
+            ['5', 'Link Text', 'Medium', 'Only for anchor tags with stable text'],
+            ['6', 'XPath', 'Slower', 'Text matching, complex DOM traversal'],
+            ['7', 'Class Name', 'Varies', 'Only if unique and stable (often not)'],
+            ['8', 'Tag Name', 'Slow', 'Only with findElements for lists'],
           ],
         },
       },
       {
+        title: 'Best Practices - DOs',
+        content: ['Follow these guidelines for creating reliable, maintainable locators:'],
+        bulletPoints: [
+          '✅ Use unique, stable attributes',
+          '✅ Prefer data-testid attributes',
+          '✅ Use relative XPath, not absolute',
+          '✅ Keep locators short and readable',
+          '✅ Store locators as constants/variables',
+          '✅ Use explicit waits before finding',
+          '✅ Work with developers to add test IDs',
+          '✅ Test locators in browser DevTools first',
+        ],
+      },
+      {
+        title: "Best Practices - DON'Ts",
+        content: ['Avoid these common mistakes that lead to flaky tests:'],
+        bulletPoints: [
+          "❌ Use absolute XPath",
+          "❌ Rely on auto-generated IDs",
+          "❌ Use dynamic class names",
+          "❌ Use index-only locators",
+          "❌ Hardcode locators in test methods",
+          "❌ Use Thread.sleep() for waiting",
+          "❌ Mix locator strategies randomly",
+          "❌ Use fragile DOM position locators",
+        ],
+      },
+      {
+        title: 'Good vs Bad Locators (Part 1)',
+        codeExplanation: 'Absolute XPath like /html/body/div[1]/div[2] breaks easily when DOM structure changes. A single added or removed div will break all downstream locators. Always use ID or relative locators instead. Auto-generated IDs (like j_idt42 or ember1234) change on each build.',
+        code: `// ❌ BAD: Absolute XPath - Breaks when DOM changes
+driver.findElement(By.xpath("/html/body/div[1]/div[2]/div[3]/form/div[1]/input"));
+
+// ✅ GOOD: ID - Unique and stable
+driver.findElement(By.id("email"));
+
+// ❌ BAD: Dynamic/Auto-generated ID
+driver.findElement(By.id("j_idt42:j_idt45:email_input"));
+driver.findElement(By.id("ember1234"));  // Ember.js generated
+
+// ✅ GOOD: Data attribute
+driver.findElement(By.cssSelector("[data-testid='email-input']"));`,
+        codeTitle: 'Locator Examples - Good vs Bad',
+      },
+      {
+        title: 'Good vs Bad Locators (Part 2)',
+        codeExplanation: 'Generated CSS class hashes (like css-1a2b3c4) change with styling updates. Use semantic class names or data attributes. Index-only locators are position-dependent and break when elements are added/removed. Context-based locators using relationships are more stable.',
+        code: `// ❌ BAD: Fragile class name that might change
+driver.findElement(By.className("css-1a2b3c4"));  // Generated hash
+
+// ✅ GOOD: Semantic class name
+driver.findElement(By.cssSelector(".login-form .email-field"));
+
+// ❌ BAD: Index-only - Position dependent
+driver.findElement(By.xpath("//input[3]"));
+
+// ✅ GOOD: Context-based
+driver.findElement(By.xpath("//label[text()='Email']/following-sibling::input"));
+
+// ❌ BAD: Too long, hard to maintain
+driver.findElement(By.xpath("//div[@class='main-container']//div[@class='content']//div[@class='form-wrapper']//form//div[@class='form-group'][1]//input"));
+
+// ✅ GOOD: Short, focused
+driver.findElement(By.cssSelector("form#login input[name='email']"));`,
+        codeTitle: 'More Locator Examples',
+      },
+      {
+        title: 'Good vs Bad Locators (Part 3)',
+        codeExplanation: 'Hardcoded text that might be localized will break in different language versions. Use aria-label or data attributes for language-independent locators.',
+        code: `// ❌ BAD: Hardcoded text that might be localized
+driver.findElement(By.xpath("//button[text()='Войти']"));  // Russian
+
+// ✅ GOOD: Use aria-label or data attribute
+driver.findElement(By.cssSelector("button[aria-label='login']"));`,
+        codeTitle: 'Language-Independent Locators',
+      },
+      {
+        title: 'Data-TestID Strategy',
+        content: ['Work with your development team to add data-testid attributes for stable, test-specific locators.', 'data-testid is the gold standard for automation-friendly applications.'],
+        codeExplanation: 'HTML elements with data-testid attributes provide stable, reliable locators. These attributes are specifically for testing and won\'t change with styling or functionality updates. Ask developers to add them during development.',
+        code: `// HTML with test IDs (ask developers to add these)
+// <input data-testid="email-input" type="email" />
+// <button data-testid="submit-btn" type="submit">Login</button>
+// <div data-testid="error-message" class="error">Invalid email</div>
+
+// Using in Selenium
+driver.findElement(By.cssSelector("[data-testid='email-input']"));
+driver.findElement(By.cssSelector("[data-testid='submit-btn']"));
+driver.findElement(By.cssSelector("[data-testid='error-message']"));`,
+        codeTitle: 'Using Data-TestID Attributes',
+      },
+      {
+        title: 'Page Object with Data-TestID',
+        codeExplanation: 'Page Object model with data-testid locators creates clean, maintainable code. Locators are stored as private constants. Methods represent user actions. Changes to UI only require updates in the Page Object, not in every test.',
+        code: `public class LoginPage {
+    // Locators using data-testid
+    private By emailInput = By.cssSelector("[data-testid='email-input']");
+    private By passwordInput = By.cssSelector("[data-testid='password-input']");
+    private By submitBtn = By.cssSelector("[data-testid='submit-btn']");
+    private By errorMessage = By.cssSelector("[data-testid='error-message']");
+    private By forgotPasswordLink = By.cssSelector("[data-testid='forgot-password']");
+    
+    // Clean, maintainable methods
+    public void login(String email, String password) {
+        driver.findElement(emailInput).sendKeys(email);
+        driver.findElement(passwordInput).sendKeys(password);
+        driver.findElement(submitBtn).click();
+    }
+}`,
+        codeTitle: 'Page Object Model with Data-TestID',
+      },
+      {
+        title: 'Benefits of Data-TestID',
+        content: ['Why data-testid is the recommended approach for automation:'],
+        bulletPoints: [
+          '1. Decoupled from styling - CSS changes won\'t break tests',
+          '2. Decoupled from functionality - ID/name changes won\'t break tests',
+          '3. Clear purpose - developers know not to change/remove them',
+          '4. Easy to identify test elements in code reviews',
+          '5. Works well with component libraries (React, Angular, Vue)',
+          '6. Provides consistent naming convention across application',
+          '7. Makes tests more readable and self-documenting',
+        ],
+      },
+      {
         title: 'CSS vs XPath Comparison',
+        content: ['Choose the right locator strategy based on your specific needs:'],
         table: {
           headers: ['Criteria', 'CSS Selector', 'XPath'],
           rows: [
             ['Performance', 'Faster', 'Slower'],
             ['Readability', 'More readable', 'Can be complex'],
-            ['Text Matching', 'Not supported', 'Supported'],
-            ['Parent Traversal', 'Not supported', 'Supported'],
-            ['Browser Support', 'Consistent', 'Varies slightly'],
+            ['Text Matching', 'Not supported', 'Supported (text(), contains())'],
+            ['Parent Traversal', 'Not supported', 'Supported (parent::, ancestor::)'],
+            ['Index-based', ':nth-child', '[index], position()'],
+            ['Sibling Traversal', 'Forward only (+, ~)', 'Both directions'],
           ],
         },
       },
       {
-        title: 'Handling Dynamic Elements',
-        codeExplanation: 'Dynamic elements have changing IDs/classes. Use partial matching with ^= (starts-with), *= (contains). data-testid attributes are most stable. Ask developers to add test-specific attributes.',
-        code: `// Dynamic ID: user_12345 -> user_67890
-driver.findElement(By.cssSelector("[id^='user_']"));
-driver.findElement(By.xpath("//div[starts-with(@id,'user_')]"));
+        title: 'When to Use CSS Selector',
+        codeExplanation: 'CSS Selectors are faster and more readable. Use them for simple attribute matching, child/descendant traversal, and pseudo-class selection. They work well with data-testid attributes and are the preferred choice for most scenarios.',
+        code: `// Use CSS Selector when:
 
-// Dynamic class with hash
-driver.findElement(By.cssSelector("[class*='button'][class*='primary']"));
+// Simple attribute matching
+driver.findElement(By.cssSelector("[data-testid='login-btn']"));
 
-// Use data-testid (most stable)
-driver.findElement(By.cssSelector("[data-testid='login-button']"));
+// Child/descendant traversal
+driver.findElement(By.cssSelector(".form-group input"));
 
-// Find by relationship
-driver.findElement(By.xpath(
-    "//label[text()='Email']/following-sibling::input"
-));`,
-        codeTitle: 'Dynamic Element Strategies',
+// Pseudo-class selection
+driver.findElement(By.cssSelector("li:first-child"));
+
+// Multiple conditions
+driver.findElement(By.cssSelector("input[type='email'][required]"));`,
+        codeTitle: 'CSS Selector Use Cases',
       },
       {
-        title: 'Best Practices Summary',
+        title: 'When to Use XPath',
+        codeExplanation: 'XPath is needed when CSS can\'t accomplish the task. Use XPath for text-based selection, navigating UP the DOM (parent/ancestor), complex conditions across rows, and finding sibling elements in both directions.',
+        code: `// Use XPath when:
+
+// Text-based selection required
+driver.findElement(By.xpath("//button[text()='Submit']"));
+driver.findElement(By.xpath("//span[contains(text(),'Welcome')]"));
+
+// Need to go UP the DOM (parent/ancestor)
+driver.findElement(By.xpath("//input[@id='email']/parent::div"));
+driver.findElement(By.xpath("//span[@class='error']/ancestor::form"));
+
+// Complex conditions (e.g., finding cell in specific row)
+driver.findElement(By.xpath("//tr[td[text()='John']]/td[3]"));
+
+// Finding sibling elements
+driver.findElement(By.xpath("//label[text()='Email']/following-sibling::input"));`,
+        codeTitle: 'XPath Use Cases',
+      },
+      {
+        title: 'Debugging Locators in Browser Console',
+        codeExplanation: 'Use browser DevTools (F12) to test locators before using them in code. document.querySelector() tests CSS selectors. $x() tests XPath. This saves time by validating locators work before writing test code.',
+        code: `// Test CSS Selector in browser console (F12 -> Console)
+document.querySelector("[data-testid='login-btn']")
+document.querySelectorAll(".course-card")  // Returns NodeList
+
+// Test XPath in browser console
+$x("//button[text()='Login']")
+$x("//input[@id='email']")
+
+// Get count of elements
+document.querySelectorAll(".course-card").length
+$x("//div[@class='course-card']").length`,
+        codeTitle: 'Browser Console Testing',
+      },
+      {
+        title: 'Debugging Locators - Highlighting & DevTools',
+        codeExplanation: 'Highlight elements to visually verify you found the right one. Use Chrome DevTools Copy feature to auto-generate selectors. The $0 variable in console refers to the currently selected element in Elements tab.',
+        code: `// Highlight element in browser console
+var el = document.querySelector("#loginBtn");
+el.style.border = "3px solid red";
+
+// Common debugging steps:
+// 1. Right-click element -> Inspect
+// 2. In Elements tab, Ctrl+F to search
+// 3. Type your CSS or XPath to test
+// 4. Yellow highlight shows matches
+// 5. Check match count (e.g., "1 of 3")
+
+// Useful Chrome DevTools features:
+// - Copy -> Copy selector (auto-generate CSS)
+// - Copy -> Copy XPath (auto-generate XPath)
+// - Copy -> Copy JS path
+// - $0 in console refers to selected element`,
+        codeTitle: 'DevTools Debugging Features',
+      },
+      {
+        title: 'Debugging Locators in Selenium',
+        codeExplanation: 'When locators don\'t work as expected, use findElements() to get a count and iterate through matches. Print element details like text and attributes to identify the correct element.',
+        code: `// Selenium debug - print all matching elements
+List<WebElement> elements = driver.findElements(By.cssSelector(".course-card"));
+System.out.println("Found: " + elements.size() + " elements");
+for (WebElement el : elements) {
+    System.out.println("Text: " + el.getText());
+    System.out.println("ID: " + el.getAttribute("id"));
+}`,
+        codeTitle: 'Selenium Debugging',
+      },
+      {
+        title: '⚠️ Avoid Absolute XPath',
+        content: ['This is a critical warning about the most common locator mistake:'],
         bulletPoints: [
-          '✅ Prefer ID > Name > CSS > XPath',
-          '✅ Use data-testid attributes (request from developers)',
-          '✅ Avoid absolute XPath - breaks with UI changes',
-          '✅ Store locators as constants in Page Objects',
-          '✅ Use explicit waits before finding elements',
-          '❌ Avoid dynamic/auto-generated IDs',
-          '❌ Avoid index-only locators like //input[3]',
-          '❌ Avoid fragile class names like css-1a2b3c',
+          'Absolute XPath like /html/body/div[1]/div[2]/form/input is EXTREMELY FRAGILE',
+          'A single added or removed div will break ALL downstream locators',
+          'DOM structure changes with every minor UI update',
+          'Never use absolute XPath generated by browser tools without modification',
+          'Always convert to relative XPath: //form[@id="login"]//input[@name="email"]',
+          'Or better: use CSS selectors or data-testid attributes',
         ],
       },
     ],
