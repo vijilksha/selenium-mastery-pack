@@ -621,101 +621,266 @@ WebElement field = driver.findElement(
         ],
       },
       {
-        title: 'Good vs Bad Locators (Part 1)',
-        codeExplanation: 'Absolute XPath like /html/body/div[1]/div[2] breaks easily when DOM structure changes. A single added or removed div will break all downstream locators. Always use ID or relative locators instead. Auto-generated IDs (like j_idt42 or ember1234) change on each build.',
-        code: `// ❌ BAD: Absolute XPath - Breaks when DOM changes
-driver.findElement(By.xpath("/html/body/div[1]/div[2]/div[3]/form/div[1]/input"));
-
-// ✅ GOOD: ID - Unique and stable
+        title: 'Practice HTML Page - Login Form Example',
+        content: ['Download the Practice HTML page to test these locator strategies on real elements.'],
+        codeExplanation: 'This HTML form includes multiple attributes for practice: id, name, data-testid, aria-label. Each attribute allows different locator strategies. The form simulates a real login page from applications like Coursera.',
+        code: `<!-- Login Form HTML Structure -->
+<form id="loginForm" data-testid="login-form">
+  <input type="email" id="email" name="userEmail" 
+         data-testid="email-input" aria-label="Email address input" />
+  <input type="password" id="password" name="userPassword" 
+         data-testid="password-input" />
+  <input type="checkbox" id="rememberMe" name="remember" 
+         data-testid="remember-checkbox" />
+  <button type="submit" id="loginBtn" data-testid="login-submit-btn" 
+          aria-label="login">Login</button>
+</form>`,
+        codeTitle: 'Practice HTML - Login Form Structure',
+      },
+      {
+        title: 'Login Form Locator Examples',
+        codeExplanation: 'Multiple ways to locate the same element. By.id() is fastest. By.name() works for form inputs. By.cssSelector() with data-testid is most stable. By.cssSelector() with aria-label is accessibility-friendly.',
+        code: `// ✅ By ID (fastest, unique)
 driver.findElement(By.id("email"));
+driver.findElement(By.id("loginBtn"));
 
-// ❌ BAD: Dynamic/Auto-generated ID
-driver.findElement(By.id("j_idt42:j_idt45:email_input"));
-driver.findElement(By.id("ember1234"));  // Ember.js generated
+// ✅ By Name (good for form inputs)
+driver.findElement(By.name("userEmail"));
+driver.findElement(By.name("userPassword"));
 
-// ✅ GOOD: Data attribute
-driver.findElement(By.cssSelector("[data-testid='email-input']"));`,
-        codeTitle: 'Locator Examples - Good vs Bad',
-      },
-      {
-        title: 'Good vs Bad Locators (Part 2)',
-        codeExplanation: 'Generated CSS class hashes (like css-1a2b3c4) change with styling updates. Use semantic class names or data attributes. Index-only locators are position-dependent and break when elements are added/removed. Context-based locators using relationships are more stable.',
-        code: `// ❌ BAD: Fragile class name that might change
-driver.findElement(By.className("css-1a2b3c4"));  // Generated hash
-
-// ✅ GOOD: Semantic class name
-driver.findElement(By.cssSelector(".login-form .email-field"));
-
-// ❌ BAD: Index-only - Position dependent
-driver.findElement(By.xpath("//input[3]"));
-
-// ✅ GOOD: Context-based
-driver.findElement(By.xpath("//label[text()='Email']/following-sibling::input"));
-
-// ❌ BAD: Too long, hard to maintain
-driver.findElement(By.xpath("//div[@class='main-container']//div[@class='content']//div[@class='form-wrapper']//form//div[@class='form-group'][1]//input"));
-
-// ✅ GOOD: Short, focused
-driver.findElement(By.cssSelector("form#login input[name='email']"));`,
-        codeTitle: 'More Locator Examples',
-      },
-      {
-        title: 'Good vs Bad Locators (Part 3)',
-        codeExplanation: 'Hardcoded text that might be localized will break in different language versions. Use aria-label or data attributes for language-independent locators.',
-        code: `// ❌ BAD: Hardcoded text that might be localized
-driver.findElement(By.xpath("//button[text()='Войти']"));  // Russian
-
-// ✅ GOOD: Use aria-label or data attribute
-driver.findElement(By.cssSelector("button[aria-label='login']"));`,
-        codeTitle: 'Language-Independent Locators',
-      },
-      {
-        title: 'Data-TestID Strategy',
-        content: ['Work with your development team to add data-testid attributes for stable, test-specific locators.', 'data-testid is the gold standard for automation-friendly applications.'],
-        codeExplanation: 'HTML elements with data-testid attributes provide stable, reliable locators. These attributes are specifically for testing and won\'t change with styling or functionality updates. Ask developers to add them during development.',
-        code: `// HTML with test IDs (ask developers to add these)
-// <input data-testid="email-input" type="email" />
-// <button data-testid="submit-btn" type="submit">Login</button>
-// <div data-testid="error-message" class="error">Invalid email</div>
-
-// Using in Selenium
+// ✅ By Data-TestID (most stable - recommended)
 driver.findElement(By.cssSelector("[data-testid='email-input']"));
-driver.findElement(By.cssSelector("[data-testid='submit-btn']"));
-driver.findElement(By.cssSelector("[data-testid='error-message']"));`,
-        codeTitle: 'Using Data-TestID Attributes',
+driver.findElement(By.cssSelector("[data-testid='login-submit-btn']"));
+
+// ✅ By aria-label (accessibility-friendly)
+driver.findElement(By.cssSelector("[aria-label='login']"));
+
+// ✅ Combined CSS Selector
+driver.findElement(By.cssSelector("#loginForm input[type='email']"));`,
+        codeTitle: 'Selenium Locator Examples for Login Form',
       },
       {
-        title: 'Page Object with Data-TestID',
-        codeExplanation: 'Page Object model with data-testid locators creates clean, maintainable code. Locators are stored as private constants. Methods represent user actions. Changes to UI only require updates in the Page Object, not in every test.',
-        code: `public class LoginPage {
-    // Locators using data-testid
-    private By emailInput = By.cssSelector("[data-testid='email-input']");
-    private By passwordInput = By.cssSelector("[data-testid='password-input']");
-    private By submitBtn = By.cssSelector("[data-testid='submit-btn']");
-    private By errorMessage = By.cssSelector("[data-testid='error-message']");
-    private By forgotPasswordLink = By.cssSelector("[data-testid='forgot-password']");
-    
-    // Clean, maintainable methods
-    public void login(String email, String password) {
-        driver.findElement(emailInput).sendKeys(email);
-        driver.findElement(passwordInput).sendKeys(password);
-        driver.findElement(submitBtn).click();
-    }
-}`,
-        codeTitle: 'Page Object Model with Data-TestID',
+        title: 'Practice HTML Page - Course Cards',
+        content: ['Practice finding multiple elements and navigating card structures.'],
+        codeExplanation: 'Course cards use data attributes for stable selection: data-testid for element type, data-course-id for unique identification, data-course for action buttons. This pattern is common in e-commerce and learning platforms like Coursera.',
+        code: `<!-- Course Card HTML Structure -->
+<div class="course-grid" data-testid="course-grid">
+  <div class="course-card" data-testid="course-card" data-course-id="COURSE001">
+    <h3 class="course-title" data-testid="course-title">
+      Selenium WebDriver Masterclass
+    </h3>
+    <span class="course-instructor" data-testid="course-instructor">
+      By John Smith
+    </span>
+    <div class="course-price" data-testid="course-price">$49.99</div>
+    <button class="enroll-btn" data-testid="enroll-btn" 
+            data-course="COURSE001">Enroll Now</button>
+  </div>
+</div>`,
+        codeTitle: 'Practice HTML - Course Card Structure',
       },
       {
-        title: 'Benefits of Data-TestID',
-        content: ['Why data-testid is the recommended approach for automation:'],
-        bulletPoints: [
-          '1. Decoupled from styling - CSS changes won\'t break tests',
-          '2. Decoupled from functionality - ID/name changes won\'t break tests',
-          '3. Clear purpose - developers know not to change/remove them',
-          '4. Easy to identify test elements in code reviews',
-          '5. Works well with component libraries (React, Angular, Vue)',
-          '6. Provides consistent naming convention across application',
-          '7. Makes tests more readable and self-documenting',
-        ],
+        title: 'Course Cards Locator Examples',
+        codeExplanation: 'findElements() returns a List of WebElements. Use data-course-id to find specific cards. XPath text() function locates elements by visible text. ancestor:: axis navigates from child to parent element.',
+        code: `// ✅ Find all course cards
+List<WebElement> allCourses = driver.findElements(
+    By.cssSelector("[data-testid='course-card']"));
+System.out.println("Total courses: " + allCourses.size());
+
+// ✅ Find specific course by data attribute
+driver.findElement(By.cssSelector("[data-course-id='COURSE001']"));
+
+// ✅ Find course by title text using XPath
+driver.findElement(By.xpath(
+    "//h3[text()='Selenium WebDriver Masterclass']"));
+
+// ✅ Find enroll button for specific course
+driver.findElement(By.cssSelector("[data-course='COURSE002']"));
+
+// ✅ Navigate from title to enroll button
+driver.findElement(By.xpath(
+    "//h3[text()='TestNG Framework Deep Dive']" +
+    "/ancestor::div[@class='course-card']//button"));`,
+        codeTitle: 'Selenium Locator Examples for Course Cards',
+      },
+      {
+        title: 'Practice HTML Page - Booking Table',
+        content: ['Practice table row/column navigation and cell selection.'],
+        codeExplanation: 'Tables use data attributes on rows (data-movie-id) and cells (data-testid). This structure is common in booking systems like BookMyShow. Header data-column attributes help identify columns programmatically.',
+        code: `<!-- Booking Table HTML Structure -->
+<table id="bookingTable" data-testid="booking-table">
+  <thead>
+    <tr>
+      <th data-column="movie">Movie</th>
+      <th data-column="showtime">Showtime</th>
+      <th data-column="seats">Available Seats</th>
+      <th data-column="price">Price</th>
+      <th data-column="status">Status</th>
+      <th data-column="action">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr data-testid="booking-row" data-movie-id="MOV001">
+      <td data-testid="movie-name">Avatar 3</td>
+      <td data-testid="showtime">10:00 AM</td>
+      <td data-testid="seats">45</td>
+      <td data-testid="price">$15.00</td>
+      <td data-testid="status"><span class="status-available">Available</span></td>
+      <td><button data-testid="book-btn" data-movie="MOV001">Book</button></td>
+    </tr>
+  </tbody>
+</table>`,
+        codeTitle: 'Practice HTML - Booking Table Structure',
+      },
+      {
+        title: 'Booking Table Locator Examples',
+        codeExplanation: 'Table locators use row data attributes for specific rows. XPath conditions like [td[text()=...]] filter rows by cell content. following-sibling:: navigates between cells. These patterns work with any tabular data.',
+        code: `// ✅ Find all table rows
+List<WebElement> rows = driver.findElements(
+    By.cssSelector("#bookingTable tbody tr"));
+
+// ✅ Find specific row by movie ID
+driver.findElement(By.cssSelector("tr[data-movie-id='MOV001']"));
+
+// ✅ Find cell by row and column
+driver.findElement(By.xpath(
+    "//tr[@data-movie-id='MOV003']/td[@data-testid='price']"));
+
+// ✅ Find row containing specific text
+driver.findElement(By.xpath("//tr[td[text()='Avatar 3']]"));
+
+// ✅ Find book button for specific movie
+driver.findElement(By.xpath(
+    "//tr[td[text()='Spider-Man 4']]//button[@data-testid='book-btn']"));
+
+// ✅ Find all available movies
+List<WebElement> available = driver.findElements(
+    By.xpath("//tr[.//span[@class='status-available']]"));
+
+// ✅ Get price of specific movie using sibling
+String price = driver.findElement(By.xpath(
+    "//td[text()='The Dark Knight Returns']/following-sibling::td[3]"))
+    .getText();`,
+        codeTitle: 'Selenium Locator Examples for Tables',
+      },
+      {
+        title: 'Practice HTML - Dropdowns',
+        content: ['Practice dropdown selection using Selenium Select class.'],
+        codeExplanation: 'HTML select elements require Selenium\'s Select class for proper interaction. The class provides selectByVisibleText(), selectByValue(), and selectByIndex() methods. Always wrap WebElement in new Select() before using select methods.',
+        code: `<!-- Dropdown HTML Structure -->
+<select id="categoryFilter" name="category" data-testid="category-dropdown">
+  <option value="">All Categories</option>
+  <option value="automation">Automation Testing</option>
+  <option value="manual">Manual Testing</option>
+  <option value="api">API Testing</option>
+  <option value="performance">Performance Testing</option>
+</select>
+
+// Selenium Code:
+Select categoryDropdown = new Select(
+    driver.findElement(By.id("categoryFilter")));
+categoryDropdown.selectByVisibleText("Automation Testing");
+categoryDropdown.selectByValue("api");
+categoryDropdown.selectByIndex(2);
+
+// Get all options
+List<WebElement> options = categoryDropdown.getOptions();
+
+// Get selected option
+String selected = categoryDropdown.getFirstSelectedOption().getText();`,
+        codeTitle: 'Dropdown Selection Examples',
+      },
+      {
+        title: 'Practice HTML - Checkboxes & Radio Buttons',
+        content: ['Practice form element selection and state verification.'],
+        codeExplanation: 'Checkboxes and radio buttons use isSelected() to check state. Click the element or its label to toggle. Use :checked pseudo-selector to find selected elements. Radio buttons in a group share the same name attribute.',
+        code: `<!-- Checkbox/Radio HTML Structure -->
+<input type="checkbox" id="selenium" name="tech" value="selenium" 
+       data-testid="tech-selenium" />
+<input type="radio" id="exp-senior" name="experience" value="senior" 
+       data-testid="exp-senior" />
+
+// ✅ Select checkbox by ID
+WebElement seleniumCheckbox = driver.findElement(By.id("selenium"));
+if (!seleniumCheckbox.isSelected()) {
+    seleniumCheckbox.click();
+}
+
+// ✅ Select by data-testid
+driver.findElement(By.cssSelector("[data-testid='tech-testng']")).click();
+
+// ✅ Select radio by value
+driver.findElement(By.cssSelector(
+    "input[name='experience'][value='senior']")).click();
+
+// ✅ Find all checked checkboxes
+List<WebElement> checked = driver.findElements(
+    By.cssSelector("input[name='tech']:checked"));
+
+// ✅ Click label instead of input (larger click target)
+driver.findElement(By.xpath("//label[text()='Selenium WebDriver']")).click();`,
+        codeTitle: 'Checkbox & Radio Button Examples',
+      },
+      {
+        title: 'Practice HTML - Dynamic Notifications',
+        content: ['Practice locating dynamically appearing elements with explicit waits.'],
+        codeExplanation: 'Dynamic elements require explicit waits. visibilityOfElementLocated() waits for element to appear. invisibilityOfElementLocated() waits for element to disappear. Data-type attributes identify notification types (success, error, warning).',
+        code: `<!-- Notification HTML Structure -->
+<div data-testid="notification" data-type="success">
+  <span data-testid="notification-message">Success!</span>
+  <button data-testid="close-notification">×</button>
+</div>
+
+// ✅ Wait for notification to appear
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+WebElement notification = wait.until(
+    ExpectedConditions.visibilityOfElementLocated(
+        By.cssSelector("[data-testid='notification']")));
+
+// ✅ Find notification by type
+driver.findElement(By.cssSelector("[data-type='success']"));
+driver.findElement(By.cssSelector("[data-type='error']"));
+
+// ✅ Find notification containing specific text
+driver.findElement(By.xpath(
+    "//div[@data-testid='notification'][contains(.,'successfully')]"));
+
+// ✅ Close specific notification
+driver.findElement(By.xpath(
+    "//div[@data-type='error']//button[@data-testid='close-notification']"))
+    .click();
+
+// ✅ Wait for notification to disappear
+wait.until(ExpectedConditions.invisibilityOfElementLocated(
+    By.cssSelector("[data-type='success']")));`,
+        codeTitle: 'Dynamic Element Locator Examples',
+      },
+      {
+        title: 'Practice HTML - Modal Dialog',
+        content: ['Practice modal interaction with visibility waits.'],
+        codeExplanation: 'Modals overlay the page and require waits for visibility. The modal-overlay contains the modal-dialog. Close by clicking X button or Cancel. Wait for invisibility after closing to ensure UI is ready for next action.',
+        code: `<!-- Modal HTML Structure -->
+<div class="modal-overlay" id="sampleModal" data-testid="modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" 
+       data-testid="modal-dialog">
+    <button data-testid="modal-close-btn">×</button>
+    <button data-testid="modal-confirm-btn">Confirm</button>
+    <button data-testid="modal-cancel-btn">Cancel</button>
+  </div>
+</div>
+
+// ✅ Wait for modal to be visible
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+wait.until(ExpectedConditions.visibilityOfElementLocated(
+    By.cssSelector("[data-testid='modal-dialog']")));
+
+// ✅ Find modal elements
+driver.findElement(By.cssSelector("[data-testid='modal-confirm-btn']")).click();
+
+// ✅ Wait for modal to close
+wait.until(ExpectedConditions.invisibilityOfElementLocated(
+    By.cssSelector("[data-testid='modal-overlay']")));`,
+        codeTitle: 'Modal Dialog Locator Examples',
       },
       {
         title: 'CSS vs XPath Comparison',
@@ -734,90 +899,97 @@ driver.findElement(By.cssSelector("[data-testid='error-message']"));`,
       },
       {
         title: 'When to Use CSS Selector',
-        codeExplanation: 'CSS Selectors are faster and more readable. Use them for simple attribute matching, child/descendant traversal, and pseudo-class selection. They work well with data-testid attributes and are the preferred choice for most scenarios.',
-        code: `// Use CSS Selector when:
-
-// Simple attribute matching
+        codeExplanation: 'CSS Selectors are faster and more readable. Use them for attribute matching, descendant selection, and pseudo-classes. They are the preferred choice for most scenarios where text matching is not required.',
+        code: `// ✅ Attribute selection
 driver.findElement(By.cssSelector("[data-testid='login-btn']"));
+driver.findElement(By.cssSelector("input[type='email']"));
 
-// Child/descendant traversal
-driver.findElement(By.cssSelector(".form-group input"));
+// ✅ Descendant selection
+driver.findElement(By.cssSelector(".login-form input"));
+driver.findElement(By.cssSelector("#bookingTable td"));
 
-// Pseudo-class selection
-driver.findElement(By.cssSelector("li:first-child"));
+// ✅ Pseudo-classes
+driver.findElement(By.cssSelector("tr:first-child"));
+driver.findElement(By.cssSelector("li:nth-child(3)"));
+driver.findElement(By.cssSelector("input:not([disabled])"));
 
-// Multiple conditions
+// ✅ Multiple conditions
 driver.findElement(By.cssSelector("input[type='email'][required]"));`,
         codeTitle: 'CSS Selector Use Cases',
       },
       {
         title: 'When to Use XPath',
-        codeExplanation: 'XPath is needed when CSS can\'t accomplish the task. Use XPath for text-based selection, navigating UP the DOM (parent/ancestor), complex conditions across rows, and finding sibling elements in both directions.',
-        code: `// Use XPath when:
-
-// Text-based selection required
-driver.findElement(By.xpath("//button[text()='Submit']"));
+        codeExplanation: 'XPath is essential when CSS cannot accomplish the task: text-based selection, navigating UP the DOM (parent/ancestor), complex row-cell conditions, and bidirectional sibling traversal.',
+        code: `// ✅ Text matching (CSS cannot do this!)
+driver.findElement(By.xpath("//button[text()='Login']"));
 driver.findElement(By.xpath("//span[contains(text(),'Welcome')]"));
 
-// Need to go UP the DOM (parent/ancestor)
+// ✅ Parent traversal (CSS cannot do this!)
 driver.findElement(By.xpath("//input[@id='email']/parent::div"));
 driver.findElement(By.xpath("//span[@class='error']/ancestor::form"));
 
-// Complex conditions (e.g., finding cell in specific row)
-driver.findElement(By.xpath("//tr[td[text()='John']]/td[3]"));
+// ✅ Sibling traversal (both directions)
+driver.findElement(By.xpath(
+    "//label[text()='Email']/following-sibling::input"));
+driver.findElement(By.xpath(
+    "//td[text()='Avatar 3']/preceding-sibling::td"));
 
-// Finding sibling elements
-driver.findElement(By.xpath("//label[text()='Email']/following-sibling::input"));`,
+// ✅ Complex conditions
+driver.findElement(By.xpath("//tr[td[text()='Avatar 3']]/td[3]"));
+driver.findElement(By.xpath(
+    "//div[@class='course-card' and .//span[text()='$49.99']]"));`,
         codeTitle: 'XPath Use Cases',
       },
       {
-        title: 'Debugging Locators in Browser Console',
-        codeExplanation: 'Use browser DevTools (F12) to test locators before using them in code. document.querySelector() tests CSS selectors. $x() tests XPath. This saves time by validating locators work before writing test code.',
-        code: `// Test CSS Selector in browser console (F12 -> Console)
-document.querySelector("[data-testid='login-btn']")
-document.querySelectorAll(".course-card")  // Returns NodeList
+        title: 'Debugging Locators - Browser Console',
+        codeExplanation: 'Always test locators in browser DevTools before using in code. document.querySelector() tests CSS. $x() tests XPath. Check match count and visually verify the correct element is found.',
+        code: `// Test in Browser Console (F12 → Console)
 
-// Test XPath in browser console
+// Test CSS Selector
+document.querySelector("[data-testid='login-btn']")
+document.querySelectorAll(".course-card")
+document.querySelectorAll(".course-card").length
+
+// Test XPath
 $x("//button[text()='Login']")
 $x("//input[@id='email']")
+$x("//div[@class='course-card']").length
 
-// Get count of elements
-document.querySelectorAll(".course-card").length
-$x("//div[@class='course-card']").length`,
+// Highlight element (visual debugging)
+var el = document.querySelector("#loginBtn");
+el.style.border = "3px solid red";
+el.style.backgroundColor = "yellow";
+
+// DevTools shortcuts:
+// - Ctrl+F in Elements tab to search
+// - $0 refers to currently selected element
+// - Right-click → Copy → Copy selector/XPath`,
         codeTitle: 'Browser Console Testing',
       },
       {
-        title: 'Debugging Locators - Highlighting & DevTools',
-        codeExplanation: 'Highlight elements to visually verify you found the right one. Use Chrome DevTools Copy feature to auto-generate selectors. The $0 variable in console refers to the currently selected element in Elements tab.',
-        code: `// Highlight element in browser console
-var el = document.querySelector("#loginBtn");
-el.style.border = "3px solid red";
-
-// Common debugging steps:
-// 1. Right-click element -> Inspect
-// 2. In Elements tab, Ctrl+F to search
-// 3. Type your CSS or XPath to test
-// 4. Yellow highlight shows matches
-// 5. Check match count (e.g., "1 of 3")
-
-// Useful Chrome DevTools features:
-// - Copy -> Copy selector (auto-generate CSS)
-// - Copy -> Copy XPath (auto-generate XPath)
-// - Copy -> Copy JS path
-// - $0 in console refers to selected element`,
-        codeTitle: 'DevTools Debugging Features',
-      },
-      {
         title: 'Debugging Locators in Selenium',
-        codeExplanation: 'When locators don\'t work as expected, use findElements() to get a count and iterate through matches. Print element details like text and attributes to identify the correct element.',
-        code: `// Selenium debug - print all matching elements
-List<WebElement> elements = driver.findElements(By.cssSelector(".course-card"));
+        codeExplanation: 'When locators don\'t work as expected, use findElements() to get a count. Iterate through matches and print element details. This helps identify when multiple elements match or when the wrong element is found.',
+        code: `// Selenium debugging - print all matching elements
+List<WebElement> elements = driver.findElements(
+    By.cssSelector(".course-card"));
 System.out.println("Found: " + elements.size() + " elements");
+
 for (WebElement el : elements) {
     System.out.println("Text: " + el.getText());
     System.out.println("ID: " + el.getAttribute("id"));
+    System.out.println("Class: " + el.getAttribute("class"));
+    System.out.println("data-testid: " + el.getAttribute("data-testid"));
+    System.out.println("---");
+}
+
+// Check if element exists without throwing exception
+List<WebElement> results = driver.findElements(By.id("someId"));
+if (results.size() > 0) {
+    System.out.println("Element found!");
+} else {
+    System.out.println("Element NOT found");
 }`,
-        codeTitle: 'Selenium Debugging',
+        codeTitle: 'Selenium Debugging Code',
       },
       {
         title: '⚠️ Avoid Absolute XPath',
@@ -829,6 +1001,20 @@ for (WebElement el : elements) {
           'Never use absolute XPath generated by browser tools without modification',
           'Always convert to relative XPath: //form[@id="login"]//input[@name="email"]',
           'Or better: use CSS selectors or data-testid attributes',
+        ],
+      },
+      {
+        title: 'Practice HTML Page Summary',
+        content: ['Download the Practice HTML page to hands-on practice all these locator strategies.'],
+        bulletPoints: [
+          '📝 Login Form - Practice ID, Name, data-testid, aria-label locators',
+          '📚 Course Cards - Practice list locators, data attributes, XPath text matching',
+          '🎫 Booking Table - Practice table row/column navigation, cell selection',
+          '🔽 Dropdowns - Practice Select class methods',
+          '☑️ Checkboxes/Radio - Practice form element state checking',
+          '🔔 Notifications - Practice dynamic element waits',
+          '🪟 Modal Dialog - Practice visibility waits and modal interaction',
+          '💡 Open HTML in browser, use DevTools (F12) to practice locators before coding!',
         ],
       },
     ],
