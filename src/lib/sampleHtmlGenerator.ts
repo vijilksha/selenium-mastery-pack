@@ -808,7 +808,94 @@ driver.findElement(By.cssSelector("[data-testid='modal-close-btn']")).click();
 wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector("[data-testid='modal-overlay']")));
         </div>
 
-        <footer>
+        <!-- SECTION 9: COOKIES HANDLING -->
+        <section class="section">
+            <h2>🍪 Cookies Handling - Practice Cookie Operations</h2>
+            <p>Practice adding, reading, deleting cookies with Selenium</p>
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label for="cookieName">Cookie Name</label>
+                    <input type="text" id="cookieName" data-testid="cookie-name-input" placeholder="sessionId" style="width:100%; padding:12px; border:2px solid #e5e7eb; border-radius:8px;" />
+                </div>
+                <div class="filter-group">
+                    <label for="cookieValue">Cookie Value</label>
+                    <input type="text" id="cookieValue" data-testid="cookie-value-input" placeholder="abc123" style="width:100%; padding:12px; border:2px solid #e5e7eb; border-radius:8px;" />
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin:15px 0;">
+                <button class="submit-btn" data-testid="add-cookie-btn" onclick="addDemoCookie()">Add Cookie</button>
+                <button class="submit-btn" data-testid="get-cookies-btn" onclick="displayAllCookies()" style="background:#10b981;">Get Cookies</button>
+                <button class="submit-btn" data-testid="delete-cookie-btn" onclick="deleteSelectedCookie()" style="background:#f59e0b;">Delete Cookie</button>
+                <button class="submit-btn" data-testid="delete-all-btn" onclick="deleteAllCookies()" style="background:#dc2626;">Delete All</button>
+            </div>
+            <div id="cookieDisplay" data-testid="cookie-display" style="background:#f9fafb; padding:15px; border-radius:8px; font-family:monospace;">Click "Get Cookies" to display</div>
+            <div class="code-block">
+<span class="code-good">// ✅ Add cookie</span>
+driver.manage().addCookie(new Cookie("sessionId", "abc123"));
+
+<span class="code-good">// ✅ Get cookie</span>
+Cookie cookie = driver.manage().getCookieNamed("sessionId");
+
+<span class="code-good">// ✅ Get all cookies</span>
+Set&lt;Cookie&gt; cookies = driver.manage().getCookies();
+
+<span class="code-good">// ✅ Delete cookie</span>
+driver.manage().deleteCookieNamed("sessionId");
+
+<span class="code-good">// ✅ Delete all</span>
+driver.manage().deleteAllCookies();
+            </div>
+        </section>
+
+        <!-- SECTION 10: DATEPICKER -->
+        <section class="section">
+            <h2>📅 DatePicker Handling</h2>
+            <h3>1. Native HTML5 Date</h3>
+            <input type="date" id="nativeDateInput" data-testid="native-date-input" style="padding:12px; border:2px solid #e5e7eb; border-radius:8px; margin:10px 0;" />
+            
+            <h3>2. Popup Calendar</h3>
+            <input type="text" id="textDateInput" data-testid="text-date-input" readonly onclick="toggleCalendar()" placeholder="Click to select" style="padding:12px; border:2px solid #e5e7eb; border-radius:8px; cursor:pointer;" />
+            <div id="calendarPopup" data-testid="calendar-popup" style="display:none; background:white; border:2px solid #2563eb; border-radius:8px; padding:15px; margin-top:10px; width:280px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <button data-testid="prev-month-btn" onclick="changeMonth(-1)" style="background:#2563eb; color:white; border:none; padding:5px 10px; border-radius:4px;">←</button>
+                    <span id="currentMonthYear" data-testid="current-month-year" style="font-weight:bold;">December 2025</span>
+                    <button data-testid="next-month-btn" onclick="changeMonth(1)" style="background:#2563eb; color:white; border:none; padding:5px 10px; border-radius:4px;">→</button>
+                </div>
+                <div id="calendarDays" data-testid="calendar-days" style="display:grid; grid-template-columns:repeat(7,1fr); gap:5px;"></div>
+            </div>
+            
+            <h3>3. Dropdown Date</h3>
+            <div style="display:flex; gap:10px; margin:10px 0;">
+                <select id="monthDropdown" data-testid="month-dropdown"><option>Month</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option><option value="12">Dec</option></select>
+                <select id="dayDropdown" data-testid="day-dropdown"><option>Day</option><option>1</option><option>15</option><option>25</option><option>31</option></select>
+                <select id="yearDropdown" data-testid="year-dropdown"><option>Year</option><option>2024</option><option>2025</option><option>2026</option></select>
+            </div>
+            
+            <h3>4. Date Range</h3>
+            <div style="display:flex; gap:15px; margin:10px 0;">
+                <input type="date" id="checkInDate" data-testid="checkin-date-input" style="padding:10px; border:2px solid #e5e7eb; border-radius:8px;" />
+                <input type="date" id="checkOutDate" data-testid="checkout-date-input" style="padding:10px; border:2px solid #e5e7eb; border-radius:8px;" />
+            </div>
+            
+            <div class="code-block">
+<span class="code-good">// ✅ Native date: sendKeys format yyyy-MM-dd</span>
+driver.findElement(By.id("nativeDateInput")).sendKeys("2025-12-25");
+
+<span class="code-good">// ✅ Popup: click input, navigate, select day</span>
+driver.findElement(By.cssSelector("[data-testid='text-date-input']")).click();
+driver.findElement(By.cssSelector("[data-testid='next-month-btn']")).click();
+driver.findElement(By.xpath("//span[text()='25']")).click();
+
+<span class="code-good">// ✅ Dropdowns: use Select class</span>
+new Select(driver.findElement(By.id("monthDropdown"))).selectByVisibleText("Dec");
+new Select(driver.findElement(By.id("dayDropdown"))).selectByValue("25");
+
+<span class="code-good">// ✅ JavaScript for stubborn inputs</span>
+js.executeScript("arguments[0].value='2025-12-25'", dateInput);
+            </div>
+        </section>
+
+        <footer
             <p>🎓 Selenium WebDriver Training Platform - Locator Best Practices Practice Page</p>
             <p>Use this HTML file with Selenium to practice all locator strategies!</p>
         </footer>
